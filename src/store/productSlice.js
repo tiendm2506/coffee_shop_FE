@@ -13,7 +13,6 @@ export const CREATE_PRODUCT = 'ProductState/CREATE_PRODUCT'
 export const createProduct = createAsyncThunk(
   CREATE_PRODUCT,
   async (params, { rejectWithValue }) => {
-    console.log('🚀 ~ params:', params)
     try {
       const response = await apiService.post(API_ENDPOINTS.CREATE_PRODUCT, params)
       if (!response.success) {
@@ -21,7 +20,24 @@ export const createProduct = createAsyncThunk(
       }
       return response.metaData
     } catch (error) {
-      rejectWithValue(error)
+      return rejectWithValue(error)
+    }
+  }
+)
+
+export const UPDATE_PRODUCT = 'ProductState/UPDATE_PRODUCT'
+export const updateProduct = createAsyncThunk(
+  UPDATE_PRODUCT,
+  async ({productId, data}, { rejectWithValue }) => {
+    console.log('productId: ', productId)
+    try {
+      const response = await apiService.put(API_ENDPOINTS.UPDATE_PRODUCT.replace(':id', productId), data)
+      if (!response.success) {
+        return rejectWithValue(response.metaData)
+      }
+      return response.metaData
+    } catch (error) {
+      return rejectWithValue(error)
     }
   }
 )
@@ -37,7 +53,7 @@ export const getListProducts = createAsyncThunk(
       }
       return response.metaData
     } catch (error) {
-      rejectWithValue(error)
+      return rejectWithValue(error)
     }
   }
 )
@@ -53,7 +69,7 @@ export const getProductDetailBySlug = createAsyncThunk(
       }
       return response.metaData
     } catch (error) {
-      rejectWithValue(error)
+      return rejectWithValue(error)
     }
   }
 )
@@ -69,7 +85,7 @@ export const deleteProductById = createAsyncThunk(
       }
       return response.metaData
     } catch (error) {
-      rejectWithValue(error)
+      return rejectWithValue(error)
     }
   }
 )
@@ -97,6 +113,18 @@ const productSlice = createSlice({
       state.productList = state.productList.filter(
         (item) => item._id !== deletedId
       )
+    })
+    builder.addCase(createProduct.fulfilled, (state, action) => {
+      state.productList.unshift(action.payload)
+    })
+    builder.addCase(updateProduct.fulfilled, (state, action) => {
+      const updated = action.payload
+      const index = state.productList.findIndex(
+        (item) => item._id === updated._id
+      )
+      if (index !== -1) {
+        state.productList[index] = updated
+      }
     })
   }
 })

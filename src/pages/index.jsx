@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
+import Button from '@/components/common/Button'
 import Post from '@/components/blog/Post'
 import FadeUpAnimation from '@/components/common/FadeUpAnimation'
 import Product from '@/components/product/Product'
@@ -39,7 +40,7 @@ export default function Home() {
               <h3 className='text-sm opacity-90 uppercase font-bold'>Best place to buy design</h3>
               <h1 className='text-5xl my-3'>Coffee Mugs</h1>
               <h6 className='text-lg mb-8 opacity-90'>The most versatile furniture system ever created. Designed to fit your life, made to move and grow.</h6>
-              <Link href={ROUTES.PRODUCTS_PAGE} className='ct-button w-55 bg-white py-5 text-light-coffee inline-block text-sm uppercase font-medium hover:bg-light-coffee hover:text-white'>Explore Our Products</Link>
+              <Link href={ROUTES.PRODUCTS_PAGE}><Button variant='outline' size='lg' className='hover:bg-light-coffee hover:text-white hover:border-light-coffee font-bold'>Explore Our Products</Button></Link>
             </div>
           </section>
         </FadeUpAnimation>
@@ -115,7 +116,7 @@ export default function Home() {
                   <div className='mt-6 uppercase font-bold text-xs'>Premium Offer</div>
                   <h2 className='mt-3 mb-4 text-secondary text-4xl'>Get our Coffee Magazine</h2>
                   <p className='mb-4 max-w-100'>The most versatile furniture system ever created. Designed to fit your life.</p>
-                  <Link href={ROUTES.PRODUCTS_PAGE} className='ct-button bg-secondary hover:bg-secondary/90 text-white font-bold text-sm w-42.5 py-4 inline-block'>START SHOPPING</Link>
+                  <Link href={ROUTES.PRODUCTS_PAGE}><Button variant='secondary'>START SHOPPING</Button></Link>
                 </div>
                 <div className='lg:grid lg:grid-cols-5 lg:gap-4'>
                   <div className='h-70 relative mb-4 lg:w-70 lg:col-span-3 lg:mb-0'><Image className='object-cover object-center w-full h-full' src='/images/magazine-1.jpg' fill sizes="(max-width: 1024px) 50vw, 100vw" alt='image' /></div>

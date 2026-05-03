@@ -13,6 +13,7 @@ import { closeCart } from '@/store/cartSlice'
 import InputField from '@/components/form/InputField'
 import { EmptyLayout } from '@/components/layout'
 import FadeUpAnimation from '@/components/common/FadeUpAnimation'
+import Button from '@/components/common/Button'
 
 export default function CheckoutPage() {
   const dispatch = useDispatch()
@@ -130,22 +131,22 @@ export default function CheckoutPage() {
                           </div>)
                           : <p>Empty cart</p>
                       }
-                      <div className='flex border border-light-coffee rounded-xl mt-4'>
+                      <div className='flex border border-light-coffee rounded-lg mt-4'>
                         <input
                           placeholder='Discount code'
                           className='px-4 py-2 w-[70%] outline-none focus:outline-none'
                           value={discountCode}
                           onChange={(e) => setDiscountCode(e.target.value)}
                         />
-                        <button type='button' className='ct-button bg-light-coffee hover:bg-light-coffee-hover text-white w-[30%]' onClick={handleApplyDiscount}>Apply</button>
+                        <Button size='sm' onClick={handleApplyDiscount}>Apply</Button>
                       </div>
                       <div className='flex justify-between py-5'>
                         <span className='text-xl font-bold'>Total</span>
                         <span className='text-xl font-bold'>{totalPrice} USD</span>
                       </div>
                       <div className='sm:grid grid-cols-2 items-center gap-6'>
-                        <button type='submit' className='ct-button bg-light-coffee hover:bg-light-coffee-hover text-white w-full py-3.25 sm:order-2'>Checkout</button>
-                        <button type='button' className='ct-button bg-secondary hover:bg-secondary-hover text-white w-full py-3.25 mt-5 sm:mt-0 sm:order-1' onClick={handleBack}>Back</button>
+                        <Button type='submit' className='w-full sm:order-2'>Checkout</Button>
+                        <Button type='button' variant='secondary' className='w-full sm:order-1 hover:bg-secondary-hover' onClick={handleBack}>Back</Button>
                       </div>
                     </div>
                   </div>

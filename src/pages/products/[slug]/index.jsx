@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
-import cx from 'classnames'
+import clsx from 'clsx'
 import { CiCircleMinus, CiCirclePlus } from 'react-icons/ci'
 import { IoDiamond } from 'react-icons/io5'
 import { FaRegLightbulb } from 'react-icons/fa'
@@ -14,6 +14,7 @@ import HeadlineTag from '@/components/HeadlineTag'
 import Product from '@/components/product/Product'
 import { MainLayout } from '@/components/layout'
 import FadeUpAnimation from '@/components/common/FadeUpAnimation'
+import Button from '@/components/common/Button'
 
 
 export default function ProductDetailPage() {
@@ -86,7 +87,7 @@ export default function ProductDetailPage() {
                   <p className='text-lg my-7'>{currentProduct?.description}</p>
                   <div className='flex items-center'>
                     {currentProduct?.on_sale && <span className='text-light-coffee text-2xl font-bold mr-3'>{currentProduct?.promotion_price} USD</span>}
-                    <span className={cx(
+                    <span className={clsx(
                       currentProduct?.on_sale ? 'line-through opacity-70 text-xl' : 'text-2xl'
                     )}>{currentProduct?.origin_price} USD</span>
                   </div>
@@ -98,7 +99,7 @@ export default function ProductDetailPage() {
                       </div>
                       <button onClick={() => handleUpdateQuantity('plus')} className='cursor-pointer h-10'><CiCirclePlus size={22} color='#1d1f2e' /></button>
                     </div>
-                    <button className='ct-button bg-secondary text-white hover:bg-light-coffee px-10 py-3 ml-4' onClick={handleAddProductToCart}>Add to cart</button>
+                    <Button variant='secondary' className='ml-4 px-10' onClick={handleAddProductToCart}>Add to cart</Button>
                   </div>
                 </div>
               </div>

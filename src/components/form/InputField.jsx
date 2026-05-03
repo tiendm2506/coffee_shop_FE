@@ -2,7 +2,7 @@ import React from 'react'
 import { useFormContext } from 'react-hook-form'
 import cx from 'classnames'
 
-const InputField = ({ type = 'text', label, labelClasses, inputClasses, name, ...props }) => {
+const InputField = ({ type = 'text', label, labelClasses, inputClasses, name, defaultValue, ...props }) => {
   const {
     register,
     formState: { errors }
@@ -31,8 +31,9 @@ const InputField = ({ type = 'text', label, labelClasses, inputClasses, name, ..
             [inputClasses]: !!inputClasses,
             'border-red-500': error
           })}
+          value={defaultValue}
         />
-        {error && <p className="text-red-500 absolute right-0 -top-6 text-sm">{error.message}</p>}
+        {error && <p className='text-red-500 absolute right-0 -top-6 text-sm'>{error.message}</p>}
       </div>
     </div>
   )

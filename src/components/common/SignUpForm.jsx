@@ -4,6 +4,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import InputField from '../form/InputField'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { object, string } from 'yup'
+import Button from './Button'
 
 
 const SignUpForm = () => {
@@ -52,7 +53,7 @@ const SignUpForm = () => {
                 inputClasses='text-white'
               />
             </div>
-            <button type='submit' className='ct-button bg-white text-light-coffee w-50 py-3.25 hover:text-white hover:bg-light-coffee'>SUBSCRIBE</button>
+            <Button type='submit' variant='outline' className='hover:bg-light-coffee hover:text-white'>SUBSCRIBE</Button>
           </form>
         </FormProvider>
       </div>

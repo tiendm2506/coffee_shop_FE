@@ -1,30 +1,21 @@
-import React, { useEffect } from 'react'
-import { AdminLayout } from '@/components/layout'
+import { AdminLayout } from "@/components/layout"
+import SelectField from "@/components/form/SelectField"
+import { useState } from "react"
+import { Controller } from "react-hook-form"
+import { useDispatch, UseDispatch, useSelector } from "react-redux"
+import { openModal } from "@/store/modalSlice"
+import PromotionModal from "@/components/modals/PromotionModal"
+import clsx from "clsx"
 import { CiEdit } from 'react-icons/ci'
 import { FaTrash } from 'react-icons/fa6'
-import Pagination from '@/components/common/Pagination'
-import { useDispatch, useSelector } from 'react-redux'
-import { getListProducts, selectListProducts } from '@/store/productSlice'
-import clsx from 'clsx'
-import { toast } from 'react-toastify'
-import { openModal } from '@/store/modalSlice'
-import { deleteProductById } from '@/store/productSlice'
-import ProductModal from '@/components/modals/ProductModal'
-import Button from '@/components/common/Button'
+import Pagination from "@/components/common/Pagination"
+import Button from "@/components/common/Button"
 
-const ProductAdminPage = () => {
+const Promotion = () => {
+  const dispatch = useDispatch()
   const ACTIVE_STATUS = 'Active'
   const LIMIT = 20
-  const dispatch = useDispatch()
-  const listProducts = useSelector(selectListProducts)
-
-  const handleAddProduct = () => {
-    dispatch(
-      openModal({
-        name: 'PRODUCT_MODAL',
-      })
-    )
-  }
+  const { isOpen, data, name: modalName, props } = useSelector((state) => state.modal)
 
   const handleEditProduct = (product) => {
     dispatch(
@@ -67,56 +58,57 @@ const ProductAdminPage = () => {
     )
   }
 
-  useEffect(() => {
-    dispatch(getListProducts({ limit: LIMIT }))
-  }, [dispatch])
-
+  const handleAddProduct = () => {
+    dispatch(
+      openModal({
+        name: 'PROMOTION_MODAL',
+      })
+    )
+  }
+  
+  
   return (
     <AdminLayout>
       <section>
-        <h1 className='text-3xl font-bold mb-5'>List products</h1>
+        <h1 className='text-3xl font-bold mb-5'>List promotion</h1>
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="w-full text-sm text-left">
             <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
               <tr>
                 <th className="px-4 py-3">#</th>
                 <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">On sale</th>
-                <th className="px-4 py-3">Highlight</th>
+                <th className="px-4 py-3">Type</th>
+                <th className="px-4 py-3">Value</th>
                 <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">In Stock</th>
+                <th className="px-4 py-3">Expired date</th>
                 <th className="px-4 py-3">Action</th>
               </tr>
             </thead>
             <tbody>
-              {listProducts.map((product, index) => (
-                <tr key={product?._id} className="border-b hover:bg-gray-200">
+              {Array.from({length: 5}).map((_, index) => (
+                <tr key={index} className="border-b hover:bg-gray-200">
                   <td className="px-4 py-3 font-medium">
                     {index + 1}
                   </td>
                   <td className="px-4 py-3 font-medium">
-                    {product?.name}
+                    Chương trình 20/11
                   </td>
                   <td className="px-4 py-3">
-                    {product?.category}
+                    PERCENT
                   </td>
                   <td className="px-4 py-3">
-                    <span className={clsx(product?.on_sale ? 'bg-green-100 text-green-700 font-bold px-2 rounded-lg' : '')}>{product?.on_sale ? 'Sale' : 'No'}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={clsx(product?.highlight ? 'bg-green-100 text-green-700 font-bold px-2 rounded-lg' : '')}>{product?.highlight ? 'Highlight' : 'No'}</span>
+                    20
                   </td>
                   <td className="px-4 py-3">
                     <span className={clsx(
                       'px-2 py-1 text-xs rounded-full',
-                      product?.status === ACTIVE_STATUS ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+                      'Active' === ACTIVE_STATUS ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
                     )}>
-                      {product?.status}
+                      Active
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    {product?.amount_in_stock}
+                    20/7/2026
                   </td>
                   <td className="px-4 py-3">
                     <div className='flex items-center'>
@@ -130,11 +122,11 @@ const ProductAdminPage = () => {
           </table>
         </div>
         <Pagination />
-        <div className='text-right'><Button size='sm' className='mt-10' onClick={handleAddProduct}>Add Product</Button></div>
+        <div className='text-right'><Button size='sm' className='mt-10' onClick={handleAddProduct}>Add Promotion</Button></div>
       </section>
-      <ProductModal name='PRODUCT_MODAL' />
+      <PromotionModal name='PROMOTION_MODAL' />
     </AdminLayout>
   )
 }
 
-export default ProductAdminPage
+export default Promotion

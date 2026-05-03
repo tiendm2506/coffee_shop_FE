@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { IoMdClose } from 'react-icons/io'
-import cx from 'classnames'
+import clsx from 'clsx'
 import { useSelector, useDispatch } from 'react-redux'
 import Link from 'next/link'
 
@@ -8,6 +8,7 @@ import { priceHelpers } from '@/helpers'
 import { ROUTES } from '@/constants'
 import { closeCart } from '@/store/cartSlice'
 import CartItem from './CartItem'
+import Button from '@/components/common/Button'
 
 const Cart = () => {
   const dispatch = useDispatch()
@@ -34,7 +35,7 @@ const Cart = () => {
 
   return (
     <div
-      className={cx(
+      className={clsx(
         'fixed top-0 z-50 w-full sm:w-140 h-screen bg-secondary text-white flex flex-col justify-between transition-all duration-300',
         isOpen ? 'right-0' : '-right-full'
       )}
@@ -60,11 +61,8 @@ const Cart = () => {
           <span>Total</span>
           <span>{priceHelpers.handleTotalPrice(carts)} USD</span>
         </div>
-        <Link
-          href={ROUTES.CHECKOUT_PAGE}
-          className='ct-button uppercase w-full bg-white text-light-coffee py-3 hover:bg-light-coffee hover:text-white inline-block'
-        >
-          Continue to checkout
+        <Link href={ROUTES.CHECKOUT_PAGE}>
+          <Button variant='outline' className='uppercase w-full hover:bg-light-coffee hover:text-white'>Continue to checkout</Button>
         </Link>
       </div>
     </div>

@@ -1,5 +1,3 @@
-//https://www.chartjs.org/docs/latest/getting-started/
-
 import React from 'react'
 import { AdminLayout } from '@/components/layout'
 import { FaArrowUpLong, FaArrowDownLong } from 'react-icons/fa6'

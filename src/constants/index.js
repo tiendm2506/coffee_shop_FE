@@ -25,6 +25,7 @@ export const API_ENDPOINTS = {
   REFRESH_TOKEN: '/user/refresh-token',
 
   CREATE_PRODUCT: '/product/create',
+  UPDATE_PRODUCT: '/product/update/:id',
   GET_LIST_PRODUCTS: '/product/list',
   GET_PRODUCT_DETAIL_BY_SLUG: '/product/:slug',
   DELETE_PRODUCT_BY_ID: '/product/remove/:id',
