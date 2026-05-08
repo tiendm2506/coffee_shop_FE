@@ -1,0 +1,145 @@
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import clsx from 'clsx'
+import { toast } from 'react-toastify'
+import { CiEdit } from 'react-icons/ci'
+import { FaTrash } from 'react-icons/fa6'
+
+import { AdminLayout } from '@/components/layout'
+import Pagination from '@/components/common/Pagination'
+import Button from '@/components/common/Button'
+import CategoryModal from '@/components/modals/CategoryModal'
+import { getListCategories, selectListCategories, deleteCategoryById } from '@/store/categorySlice'
+import { openModal } from '@/store/modalSlice'
+import { STATUS } from '@/constants'
+
+const Category = () => {
+  const dispatch = useDispatch()
+  const CategoryList = useSelector(selectListCategories)
+  const pagination = useSelector(state => state.category.pagination)
+  const [page, setPage] = useState(1)
+
+  const handleEditCategory = (Category) => {
+    dispatch(
+      openModal({
+        name: 'CATEGORY_MODAL',
+        data: Category,
+        props: {
+          id: Category._id
+        }
+      })
+    )
+  }
+
+  const handleDelete = (category) => {
+    dispatch(
+      openModal({
+        type: 'CONFIRM',
+        name: 'CONFIRM_MODAL',
+        data: category,
+        props: {
+          title: 'Delete Category',
+          content: () => (
+            <>
+              You want to delete Category <b>{category.name}</b> ?
+            </>
+          ),
+          confirmText: 'Delete',
+          onConfirm: async (category) => {
+            try {
+              await dispatch(
+                deleteCategoryById({ categoryId: category?._id })
+              ).unwrap()
+              toast.success('Delete Category successfully')
+            } catch (error) {
+              const message =
+                      error?.message || // từ rejectWithValue
+                      error?.response?.data?.message || // axios fallback
+                      'Delete failed'
+
+              toast.error(message)
+            }
+          }
+        }
+      })
+    )
+  }
+
+  const handleAddCategory = () => {
+    dispatch(
+      openModal({
+        name: 'CATEGORY_MODAL'
+      })
+    )
+  }
+
+  useEffect(() => {
+    dispatch(getListCategories())
+  }, [])
+
+  useEffect(() => {
+    dispatch(getListCategories({ page }))
+  }, [page])
+
+
+  return (
+    <AdminLayout>
+      <section>
+        <h1 className='text-3xl font-bold mb-5'>List Category</h1>
+        <div className='bg-white rounded-lg shadow overflow-hidden'>
+          <table className='w-full text-sm text-left'>
+            <thead className='bg-gray-100 text-gray-600 uppercase text-xs'>
+              <tr>
+                <th className='px-4 py-3'>#</th>
+                <th className='px-4 py-3'>Name</th>
+                <th className='px-4 py-3'>Slug</th>
+                <th className='px-4 py-3'>Status</th>
+                <th className='px-4 py-3'>Type</th>
+                <th className='px-4 py-3'>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                CategoryList && CategoryList.map((category, index) => (
+                  <tr key={index} className='border-b hover:bg-gray-200'>
+                    <td className='px-4 py-3 font-medium'>
+                      {index + 1}
+                    </td>
+                    <td className='px-4 py-3 font-medium'>{category?.name}</td>
+                    <td className='px-4 py-3'>{category?.slug}</td>
+                    <td className='px-4 py-3'>
+                      <span className={clsx(
+                        'px-2 py-1 text-xs rounded-full',
+                        category?.status === STATUS.ACTIVE ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+                      )}>
+                        {category?.status}
+                      </span>
+                    </td>
+                    <td className='px-4 py-3'>{category?.type}</td>
+                    <td className='px-4 py-3'>
+                      <div className='flex items-center'>
+                        <CiEdit size={22} className='mr-4 cursor-pointer transition-all hover:scale-[1.2]' onClick={() => handleEditCategory(category)} />
+                        <FaTrash size={20} className='cursor-pointer transition-all hover:scale-[1.2]' onClick={() => handleDelete(category)} />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <Pagination
+          currentPage={page}
+          totalPages={pagination.totalPages}
+          onPageChange={setPage}
+        />
+
+        <div className='text-right'><Button size='sm' className='mt-10' onClick={handleAddCategory}>Add Category</Button></div>
+      </section>
+      <CategoryModal name='CATEGORY_MODAL' />
+    </AdminLayout>
+  )
+}
+
+export default Category

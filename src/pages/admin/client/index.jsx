@@ -1,0 +1,100 @@
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { FaTrash } from 'react-icons/fa6'
+import { toast } from 'react-toastify'
+
+import Pagination from '@/components/common/Pagination'
+import { AdminLayout } from '@/components/layout'
+import { openModal } from '@/store/modalSlice'
+import { getListClients, selectListClients, deleteClientById } from '@/store/clientSlice'
+
+const ClientPage = () => {
+  const dispatch = useDispatch()
+  const clientList = useSelector(selectListClients)
+  const pagination = useSelector(state => state.client.pagination)
+  const [page, setPage] = useState(1)
+
+  const handleDelete = (client) => {
+    dispatch(
+      openModal({
+        type: 'CONFIRM',
+        name: 'CONFIRM_MODAL',
+        data: client,
+        props: {
+          title: 'Delete client',
+          content: () => (
+            <>
+              You want to delete order client <b>{client?.name}</b> ?
+            </>
+          ),
+          confirmText: 'Delete',
+          onConfirm: async (client) => {
+            try {
+              await dispatch(
+                deleteClientById({ clientId: client?._id })
+              ).unwrap()
+              toast.success(`Delete client ${client?.name} successfully`)
+            } catch (error) {
+              toast.error('Delete failed')
+            }
+          }
+        }
+      })
+    )
+  }
+
+  useEffect(() => {
+    dispatch(getListClients({ page }))
+  }, [page])
+
+
+  return (
+    <AdminLayout>
+      <section>
+        <h1 className='text-3xl font-bold mb-5'>List clients</h1>
+        <div className='bg-white rounded-lg shadow overflow-hidden'>
+          <table className='w-full text-sm text-left'>
+            <thead className='bg-gray-100 text-gray-600 uppercase text-xs'>
+              <tr>
+                <th className='px-4 py-3'>#</th>
+                <th className='px-4 py-3'>Name</th>
+                <th className='px-4 py-3'>Email</th>
+                <th className='px-4 py-3'>Phone</th>
+                <th className='px-4 py-3'>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              { clientList.length === 0 && (
+                <tr>
+                  <td colSpan={11} className='p-4 font-bold'>Empty client</td>
+                </tr>
+              ) }
+              {
+                clientList && clientList.map((client, index) => (
+                  <tr key={index} className='border-b hover:bg-gray-200'>
+                    <td className='px-4 py-3 font-medium'>{index + 1}</td>
+                    <td className='px-4 py-3 font-medium'>{client?.name}</td>
+                    <td className='px-4 py-3 font-medium'>{client?.email}</td>
+                    <td className='px-4 py-3 font-medium'>{client?.phone}</td>
+                    <td className='px-4 py-3'>
+                      <FaTrash size={20} className='cursor-pointer transition-all hover:scale-[1.2]' onClick={() => handleDelete(client)} />
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <Pagination
+          currentPage={page}
+          totalPages={pagination.totalPages}
+          onPageChange={setPage}
+        />
+
+      </section>
+    </AdminLayout>
+  )
+}
+
+export default ClientPage

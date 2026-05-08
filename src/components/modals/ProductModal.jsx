@@ -11,9 +11,14 @@ import { createProduct, updateProduct } from '@/store/productSlice'
 import { toast } from 'react-toastify'
 import { isEmpty } from 'lodash'
 import Button from '../common/Button'
+import { selectListCategories, getListCategories } from '@/store/categorySlice'
+import SelectField from '../form/SelectField'
+import { STATUS } from '@/constants'
 
 const ProductModal = ({ name }) => {
   const dispatch = useDispatch()
+  const categoriesFetch = useSelector(selectListCategories)
+  const [categories, setCategories] = useState([])
   const { isOpen, data, name: modalName, props } = useSelector((state) => state.modal)
   const productId = props.id
   const [highlight, setHighlight] = useState(false)
@@ -26,13 +31,16 @@ const ProductModal = ({ name }) => {
     detail: '',
     origin_price: '',
     promotion_price: '',
-    category: '',
+    category: {
+      id: '',
+      name: '',
+      slug: ''
+    },
     amount_in_stock: '',
     slug: '',
-    category_slug: '',
     highlight: false,
     on_sale: false,
-    status: 'Active'
+    status: STATUS.ACTIVE
   }
 
   const schema = object({
@@ -47,7 +55,15 @@ const ProductModal = ({ name }) => {
     image: string().trim().required('Please enter product image'),
     description: string().trim().required('Please enter product description'),
     detail: string().trim().required('Please enter product detail'),
-    origin_price: number().typeError('Origin price must be a number').required('Please enter origin price').min(0, 'Origin price must be >= 0'),
+    origin_price: number()
+      .transform((value, originalValue) =>
+        originalValue === '' ? null : value
+      )
+      .nullable()
+      .typeError('Origin price must be a number')
+      .required('Please enter origin price')
+      .min(0, 'Origin price must be >= 0'),
+
     promotion_price: number()
       .transform((value, originalValue) =>
         originalValue === '' ? null : Number(originalValue)
@@ -62,13 +78,25 @@ const ProductModal = ({ name }) => {
             .min(0, 'Promotion price must be >= 0'),
         otherwise: (schema) =>
           schema.nullable().notRequired()
-    }),
+      }),
 
-    category: string().trim().required('Please enter category'),
+    category: object({
+      id: string().required(),
+      name: string().required(),
+      slug: string().required()
+    })
+      .nullable()
+      .required('Please choose category')
+      .test(
+        'is-selected',
+        'Please choose category',
+        (value) => value && value.id
+      ),
+
     amount_in_stock: number()
       .typeError('Amount in stock must be a number')
       .required('Please enter Amount in stock')
-      .min(0, 'Amount in stock must be >= 0'),
+      .min(0, 'Amount in stock must be >= 0')
   })
 
   const methods = useForm({
@@ -80,11 +108,14 @@ const ProductModal = ({ name }) => {
       detail: '',
       origin_price: '',
       promotion_price: '',
-      category: '',
+      category: {
+        id: '',
+        name: '',
+        slug: ''
+      },
       amount_in_stock: '',
       slug: '',
-      category_slug: '',
-      on_sale: false,
+      on_sale: false
     }
   })
   const { watch, setValue, reset } = methods
@@ -92,23 +123,21 @@ const ProductModal = ({ name }) => {
 
   const onSubmit = async (data) => {
     try {
-      if(isEmpty(productId)){
+      if (isEmpty(productId)) {
         await dispatch(createProduct({
           ...data,
           slug: stringHelpers.slugify(data.name),
-          category_slug: stringHelpers.slugify(data.category),
           highlight,
-          status: active ? 'Active' : 'Inactive'
+          status: active ? STATUS.ACTIVE : STATUS.INACTIVE
         })).unwrap()
-      } else{
+      } else {
         await dispatch(updateProduct({
           productId,
           data: {
             ...data,
             slug: stringHelpers.slugify(data.name),
-            category_slug: stringHelpers.slugify(data.category),
             highlight,
-            status: active ? 'Active' : 'Inactive'
+            status: active ? STATUS.ACTIVE : STATUS.INACTIVE
           }
         })).unwrap()
       }
@@ -116,8 +145,8 @@ const ProductModal = ({ name }) => {
       reset()
       dispatch(closeModal())
     } catch (error) {
-        toast.error(`${textAction} product failed`)
-      }
+      toast.error(`${textAction} product failed`)
+    }
   }
 
   useEffect(() => {
@@ -130,6 +159,7 @@ const ProductModal = ({ name }) => {
     if (!isOpen) {
       return reset(defaultValues)
     }
+
   }, [isOpen])
 
   useEffect(() => {
@@ -141,14 +171,33 @@ const ProductModal = ({ name }) => {
         detail: data.detail || '',
         origin_price: data.origin_price || '',
         promotion_price: data.promotion_price || '',
-        category: data.category || '',
+        category: {
+          id: data.category.id,
+          name: data.category.name,
+          slug: data.category.slug
+        },
         amount_in_stock: data.amount_in_stock || '',
         slug: data.slug || '',
-        category_slug: data.category_slug || '',
-        on_sale: data.on_sale || false,
+        on_sale: data.on_sale || false
       })
+      setHighlight(data?.highlight)
+      setActive(data?.status === STATUS.ACTIVE ? true : false)
     }
   }, [data])
+
+
+  useEffect(() => {
+    const options = (categoriesFetch || []).map(item => ({
+      label: item.name,
+      value: item._id,
+      name: item._name
+    }))
+    setCategories(options)
+  }, [categoriesFetch])
+
+  useEffect(() => {
+    dispatch(getListCategories())
+  }, [dispatch])
 
   if (!isOpen || modalName !== name) return null
 
@@ -175,30 +224,58 @@ const ProductModal = ({ name }) => {
               </div>
             </div>
             <div className='h-100 lg:h-auto overflow-auto lg:grid lg:grid-cols-2 lg:gap-4'>
-
               <InputField
                 name='name'
                 label='Name'
                 labelClasses='text-light-coffee text-left block'
                 inputClasses='text-secondary'
+                required
+              />
+              <SelectField
+                name='category'
+                label='Category'
+                placeholder='Select category...'
+                options={categoriesFetch.map(item => ({
+                  label: item.name,
+                  value: item._id,
+                  slug: item.slug
+                }))}
+                returnObject
+                mapValue={(opt) => ({
+                  id: opt.value,
+                  name: opt.label,
+                  slug: opt.slug
+                })}
+                required
               />
               <InputField
                 name='image'
                 label='Image URL'
                 labelClasses='text-light-coffee text-left block'
                 inputClasses='text-secondary'
+                required
               />
               <InputField
                 name='description'
                 label='Description'
                 labelClasses='text-light-coffee text-left block'
                 inputClasses='text-secondary'
+                required
               />
               <InputField
                 name='detail'
                 label='Detail'
                 labelClasses='text-light-coffee text-left block'
                 inputClasses='text-secondary'
+                required
+              />
+              <InputField
+                name='amount_in_stock'
+                label='Amount in stock'
+                labelClasses='text-light-coffee text-left block'
+                inputClasses='text-secondary'
+                type='number'
+                required
               />
               <InputField
                 name='origin_price'
@@ -206,6 +283,8 @@ const ProductModal = ({ name }) => {
                 labelClasses='text-light-coffee text-left block'
                 inputClasses='text-secondary'
                 type='number'
+                step='any'
+                required
               />
               <InputField
                 name='promotion_price'
@@ -214,22 +293,10 @@ const ProductModal = ({ name }) => {
                 inputClasses={`text-secondary ${onSale ? '': 'bg-gray-200'}`}
                 disabled={!onSale}
                 type='number'
-              />
-              <InputField
-                name='category'
-                label='Category'
-                labelClasses='text-light-coffee text-left block'
-                inputClasses='text-secondary'
-              />
-              <InputField
-                name='amount_in_stock'
-                label='Amount in stock'
-                labelClasses='text-light-coffee text-left block'
-                inputClasses='text-secondary'
-                type='number'
+                step='any'
+                required={onSale}
               />
             </div>
-
             <Button type='submit' size='sm'>{textAction}</Button>
           </form>
         </FormProvider>

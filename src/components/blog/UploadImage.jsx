@@ -52,33 +52,33 @@ const ImageUploader = ({ onUploadSuccess }) => {
   }
 
   return (
-    <div className="mb-4">
+    <div className='mb-4'>
       <button
-        type="button"
+        type='button'
         onClick={handleSelectFile}
-        className="px-4 py-2 bg-blue-500 text-white rounded"
+        className='px-4 py-2 bg-blue-500 text-white rounded'
       >
         Upload Image
       </button>
 
       <input
-        type="file"
+        type='file'
         hidden
         ref={inputRef}
         onChange={handleFileChange}
       />
 
       {preview && (
-        <div className="mt-3">
-          <img src={preview} className="w-40 rounded" />
+        <div className='mt-3'>
+          <img src={preview} className='w-40 rounded' />
         </div>
       )}
 
       {loading && (
-        <div className="mt-2">
-          <div className="w-full bg-gray-200 h-2 rounded">
+        <div className='mt-2'>
+          <div className='w-full bg-gray-200 h-2 rounded'>
             <div
-              className="bg-green-500 h-2 rounded"
+              className='bg-green-500 h-2 rounded'
               style={{ width: `${progress}%` }}
             />
           </div>

@@ -28,8 +28,7 @@ export const createProduct = createAsyncThunk(
 export const UPDATE_PRODUCT = 'ProductState/UPDATE_PRODUCT'
 export const updateProduct = createAsyncThunk(
   UPDATE_PRODUCT,
-  async ({productId, data}, { rejectWithValue }) => {
-    console.log('productId: ', productId)
+  async ({ productId, data }, { rejectWithValue }) => {
     try {
       const response = await apiService.put(API_ENDPOINTS.UPDATE_PRODUCT.replace(':id', productId), data)
       if (!response.success) {
@@ -105,17 +104,14 @@ const productSlice = createSlice({
         state.pagination = pagination
       }
     })
-    builder.addCase(getProductDetailBySlug.fulfilled, (state, action) => {
-      state.currentProduct = action.payload
+    builder.addCase(createProduct.fulfilled, (state, action) => {
+      state.productList.unshift(action.payload)
     })
     builder.addCase(deleteProductById.fulfilled, (state, action) => {
       const deletedId = action.meta.arg.productId
       state.productList = state.productList.filter(
         (item) => item._id !== deletedId
       )
-    })
-    builder.addCase(createProduct.fulfilled, (state, action) => {
-      state.productList.unshift(action.payload)
     })
     builder.addCase(updateProduct.fulfilled, (state, action) => {
       const updated = action.payload
@@ -125,6 +121,9 @@ const productSlice = createSlice({
       if (index !== -1) {
         state.productList[index] = updated
       }
+    })
+    builder.addCase(getProductDetailBySlug.fulfilled, (state, action) => {
+      state.currentProduct = action.payload
     })
   }
 })

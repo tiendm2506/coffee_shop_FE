@@ -1,9 +1,9 @@
 export const priceHelpers = {
   handleSubPrice: (item) => {
-    const price = item.on_sale
-      ? Number(item.promotion_price)
-      : Number(item.origin_price)
-    return Math.round(price * item.quantity * 100) / 100
+    const price = item?.on_sale
+      ? Number(item?.promotion_price)
+      : Number(item?.origin_price)
+    return Math.round(price * item?.quantity * 100) / 100
   },
 
   handleTotalPrice: (items = []) => {

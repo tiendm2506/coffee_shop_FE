@@ -22,8 +22,7 @@ const Product = ({ image, name, isOnSale = false, url = '#', originPrice, promot
         <div className='flex items-center justify-center pb-4'>
           {isOnSale && <span className='text-xl text-light-coffee font-bold mr-2'>{promotionPrice} USD</span>}
           <span className={clsx(
-            'text-base',
-            isOnSale ? 'text-primary/60 line-through' : 'text-primary'
+            isOnSale ? 'text-primary/60 line-through' : 'text-light-coffee font-bold text-xl'
           )}>
             {originPrice} &nbsp;USD
           </span>

@@ -1,24 +1,25 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { closeModal } from '@/store/modalSlice'
 import InputField from '../form/InputField'
-import { Controller, FormProvider, useForm } from 'react-hook-form'
+import { FormProvider, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { object, string, number, boolean } from 'yup'
 import SwitchButton from '../admin/SwitchButton'
 import { useEffect, useState } from 'react'
-import { stringHelpers } from '@/helpers'
-// import { createpromotion, updatepromotion } from '@/store/promotionSlice'
 import { toast } from 'react-toastify'
 import { isEmpty } from 'lodash'
 import SelectField from '../form/SelectField'
 import Button from '../common/Button'
+import { createPromotion, updatePromotion } from '@/store/promotionSlice'
+import DatePickerField from '../form/DatePickerField'
+import { STATUS } from '@/constants'
+
 
 const PromotionModal = ({ name }) => {
   const options = [
     { label: 'PERCENT', value: 'PERCENT' },
-    { label: 'CASH', value: 'CASH' },
+    { label: 'CASH', value: 'CASH' }
   ]
-  const [type, setType] = useState('')
   const dispatch = useDispatch()
   const { isOpen, data, name: modalName, props } = useSelector((state) => state.modal)
   const promotionId = props.id
@@ -28,22 +29,21 @@ const PromotionModal = ({ name }) => {
     name: '',
     type: '',
     value: '',
-    status: 'Active',
-    expiredDate: ''
+    status: STATUS.ACTIVE,
+    expired_date: ''
   }
-
   const schema = object({
     name: string()
       .trim()
       .required('Please enter promotion name')
       .min(3, 'Length must be min 3 characters')
-      .max(100, 'Length must be max 100 characters')
-      .matches(/^[a-zA-Z0-9\s]+$/, 'Name must not contain special characters'),
+      .max(100, 'Length must be max 100 characters'),
 
     type: string().required('Please choose type promotion'),
+    code: string().required('Please enter promotion code'),
     value: string().required('Please enter value promotion'),
     status: string().required('Please enter status promotion'),
-    expiredDate: string().required('Please enter expired date promotion'),
+    expired_date: string().required('Please enter expired date promotion')
   })
 
   const methods = useForm({
@@ -51,16 +51,36 @@ const PromotionModal = ({ name }) => {
     defaultValues: {
       name: '',
       type: '',
+      code: '',
       value: '',
-      status: 'Active',
-      expiredDate: ''
+      status: STATUS.ACTIVE,
+      expired_date: ''
     }
   })
-  const { setValue, reset } = methods
+  const { reset } = methods
 
   const onSubmit = async (data) => {
-    console.log('On submit')
-    console.log({data})
+    try {
+      if (isEmpty(promotionId)) {
+        await dispatch(createPromotion({
+          ...data,
+          status: active ? STATUS.ACTIVE : STATUS.INACTIVE
+        })).unwrap()
+      } else {
+        await dispatch(updatePromotion({
+          promotionId,
+          data: {
+            ...data,
+            status: active ? STATUS.ACTIVE : STATUS.INACTIVE
+          }
+        })).unwrap()
+      }
+      toast.success(`${textAction} promotion successfully.`)
+      reset()
+      dispatch(closeModal())
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   useEffect(() => {
@@ -69,15 +89,18 @@ const PromotionModal = ({ name }) => {
     }
   }, [isOpen])
 
+
   useEffect(() => {
     if (isOpen && data) {
       reset({
         name: data.name || '',
         type: data.type || '',
+        code: data.code || '',
         value: data.value || '',
-        status: data.status || 'Active',
-        expiredDate: data.expiredDate || ''
+        status: data.status || STATUS.ACTIVE,
+        expired_date: data.expired_date || ''
       })
+      setActive(data?.status === STATUS.ACTIVE ? true : false)
     }
   }, [data])
 
@@ -98,18 +121,24 @@ const PromotionModal = ({ name }) => {
               </div>
             </div>
             <div className='h-100 lg:h-auto overflow-auto lg:grid lg:grid-cols-2 lg:gap-4'>
-
               <InputField
                 name='name'
                 label='Name'
                 labelClasses='text-light-coffee text-left block'
                 inputClasses='text-secondary'
+                required
               />
-              
               <SelectField
-                name="type"
-                label="Promotion Type"
+                name='type'
+                label='Promotion Type'
                 options={options}
+                required
+              />
+              <InputField
+                name='code'
+                label='Promotion code'
+                labelClasses='text-light-coffee text-left block'
+                inputClasses='text-secondary'
                 required
               />
               <InputField
@@ -117,13 +146,9 @@ const PromotionModal = ({ name }) => {
                 label='Value'
                 labelClasses='text-light-coffee text-left block'
                 inputClasses='text-secondary'
+                required
               />
-              <InputField
-                name='expiredDate'
-                label='Expired Date'
-                labelClasses='text-light-coffee text-left block'
-                inputClasses='text-secondary'
-              />
+              <DatePickerField name='expired_date' label='Expired Date' required />
             </div>
             <Button type='submit' size='sm'>{textAction}</Button>
           </form>

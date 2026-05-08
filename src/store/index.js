@@ -1,30 +1,38 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { persistStore, persistReducer } from 'redux-persist'
 import { combineReducers } from 'redux'
+
 import storage from './storage'
 import loaderReducer from './loaderSlice'
-import modalReducer from './modalSlice'
 import cartReducer from './cartSlice'
 import productSlice from './productSlice'
 import categorySlice from './categorySlice'
+import promotionSlice from './promotionSlice'
+import orderSlice from './orderSlice'
 import userSlice from './userSlice'
+import notificationSlice from './notificationSlice'
+import modalReducer from './modalSlice'
+import clientReducer from './clientSlice'
+import postReducer from './postSlice'
 
-
-// combine reducers
 const rootReducer = combineReducers({
   loader: loaderReducer,
   cart: cartReducer,
   product: productSlice,
   category: categorySlice,
+  promotion: promotionSlice,
+  order: orderSlice,
   user: userSlice,
-  modal: modalReducer
+  notification: notificationSlice,
+  modal: modalReducer,
+  client: clientReducer,
+  post: postReducer
 })
 
-// config persist
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['cart', 'user']
+  whitelist: ['cart', 'user', 'notification']
 }
 
 const persistedReducer = persistReducer(

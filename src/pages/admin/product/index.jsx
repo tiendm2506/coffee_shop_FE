@@ -1,27 +1,30 @@
-import React, { useEffect } from 'react'
-import { AdminLayout } from '@/components/layout'
+import { useEffect, useState } from 'react'
 import { CiEdit } from 'react-icons/ci'
 import { FaTrash } from 'react-icons/fa6'
-import Pagination from '@/components/common/Pagination'
 import { useDispatch, useSelector } from 'react-redux'
-import { getListProducts, selectListProducts } from '@/store/productSlice'
 import clsx from 'clsx'
 import { toast } from 'react-toastify'
-import { openModal } from '@/store/modalSlice'
+import { isEmpty } from 'lodash'
+
+import { getListProducts, selectListProducts } from '@/store/productSlice'
 import { deleteProductById } from '@/store/productSlice'
+import { openModal } from '@/store/modalSlice'
+import Pagination from '@/components/common/Pagination'
+import { AdminLayout } from '@/components/layout'
 import ProductModal from '@/components/modals/ProductModal'
 import Button from '@/components/common/Button'
+import { STATUS } from '@/constants'
 
 const ProductAdminPage = () => {
-  const ACTIVE_STATUS = 'Active'
-  const LIMIT = 20
   const dispatch = useDispatch()
   const listProducts = useSelector(selectListProducts)
+  const pagination = useSelector(state => state.product.pagination)
+  const [page, setPage] = useState(1)
 
   const handleAddProduct = () => {
     dispatch(
       openModal({
-        name: 'PRODUCT_MODAL',
+        name: 'PRODUCT_MODAL'
       })
     )
   }
@@ -42,7 +45,7 @@ const ProductAdminPage = () => {
     dispatch(
       openModal({
         type: 'CONFIRM',
-        name: 'DELETE_PRODUCT_MODAL',
+        name: 'CONFIRM_MODAL',
         data: product,
         props: {
           title: 'Delete product',
@@ -68,68 +71,83 @@ const ProductAdminPage = () => {
   }
 
   useEffect(() => {
-    dispatch(getListProducts({ limit: LIMIT }))
-  }, [dispatch])
+    dispatch(getListProducts())
+  }, [])
+
+  useEffect(() => {
+    dispatch(getListProducts({ page }))
+  }, [page])
 
   return (
     <AdminLayout>
       <section>
         <h1 className='text-3xl font-bold mb-5'>List products</h1>
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
-              <tr>
-                <th className="px-4 py-3">#</th>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">On sale</th>
-                <th className="px-4 py-3">Highlight</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">In Stock</th>
-                <th className="px-4 py-3">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {listProducts.map((product, index) => (
-                <tr key={product?._id} className="border-b hover:bg-gray-200">
-                  <td className="px-4 py-3 font-medium">
-                    {index + 1}
-                  </td>
-                  <td className="px-4 py-3 font-medium">
-                    {product?.name}
-                  </td>
-                  <td className="px-4 py-3">
-                    {product?.category}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={clsx(product?.on_sale ? 'bg-green-100 text-green-700 font-bold px-2 rounded-lg' : '')}>{product?.on_sale ? 'Sale' : 'No'}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={clsx(product?.highlight ? 'bg-green-100 text-green-700 font-bold px-2 rounded-lg' : '')}>{product?.highlight ? 'Highlight' : 'No'}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={clsx(
-                      'px-2 py-1 text-xs rounded-full',
-                      product?.status === ACTIVE_STATUS ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
-                    )}>
-                      {product?.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {product?.amount_in_stock}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className='flex items-center'>
-                      <CiEdit size={22} className='mr-4 cursor-pointer transition-all hover:scale-[1.2]' onClick={()=>handleEditProduct(product)} />
-                      <FaTrash size={20} className='cursor-pointer transition-all hover:scale-[1.2]' onClick={() => handleDelete(product)} />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <Pagination />
+        {listProducts && isEmpty(listProducts) && <p>Empty products. Please add more product</p>}
+        {
+          listProducts && !isEmpty(listProducts) && (
+            <div className='bg-white rounded-lg shadow overflow-hidden'>
+              <table className='w-full text-sm text-left'>
+                <thead className='bg-gray-100 text-gray-600 uppercase text-xs'>
+                  <tr>
+                    <th className='px-4 py-3'>#</th>
+                    <th className='px-4 py-3'>Name</th>
+                    <th className='px-4 py-3'>Category</th>
+                    <th className='px-4 py-3'>On sale</th>
+                    <th className='px-4 py-3'>Highlight</th>
+                    <th className='px-4 py-3'>Status</th>
+                    <th className='px-4 py-3'>In Stock</th>
+                    <th className='px-4 py-3'>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {listProducts.map((product, index) => (
+                    <tr key={product?._id} className='border-b hover:bg-gray-200'>
+                      <td className='px-4 py-3 font-medium'>
+                        {index + 1}
+                      </td>
+                      <td className='px-4 py-3 font-medium'>
+                        {product?.name}
+                      </td>
+                      <td className='px-4 py-3'>
+                        {product?.category?.name}
+                      </td>
+                      <td className='px-4 py-3'>
+                        <span className={clsx(product?.on_sale ? 'bg-green-100 text-green-700 font-bold px-2 rounded-lg' : '')}>{product?.on_sale ? 'Sale' : 'No'}</span>
+                      </td>
+                      <td className='px-4 py-3'>
+                        <span className={clsx(product?.highlight ? 'bg-green-100 text-green-700 font-bold px-2 rounded-lg' : '')}>{product?.highlight ? 'Highlight' : 'No'}</span>
+                      </td>
+                      <td className='px-4 py-3'>
+                        <span className={clsx(
+                          'px-2 py-1 text-xs rounded-full',
+                          product?.status === STATUS.ACTIVE ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+                        )}>
+                          {product?.status}
+                        </span>
+                      </td>
+                      <td className='px-4 py-3'>
+                        {product?.amount_in_stock}
+                      </td>
+                      <td className='px-4 py-3'>
+                        <div className='flex items-center'>
+                          <CiEdit size={22} className='mr-4 cursor-pointer transition-all hover:scale-[1.2]' onClick={() => handleEditProduct(product)} />
+                          <FaTrash size={20} className='cursor-pointer transition-all hover:scale-[1.2]' onClick={() => handleDelete(product)} />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        }
+
+        <Pagination
+          currentPage={page}
+          totalPages={pagination.totalPages}
+          onPageChange={setPage}
+        />
+
         <div className='text-right'><Button size='sm' className='mt-10' onClick={handleAddProduct}>Add Product</Button></div>
       </section>
       <ProductModal name='PRODUCT_MODAL' />

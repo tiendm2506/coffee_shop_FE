@@ -1,8 +1,8 @@
 import React from 'react'
 import { useFormContext } from 'react-hook-form'
-import cx from 'classnames'
+import clsx from 'clsx'
 
-const InputField = ({ type = 'text', label, labelClasses, inputClasses, name, defaultValue, ...props }) => {
+const InputField = ({ type = 'text', label, labelClasses, inputClasses, name, defaultValue, required = false, step = '1', ...props }) => {
   const {
     register,
     formState: { errors }
@@ -14,11 +14,11 @@ const InputField = ({ type = 'text', label, labelClasses, inputClasses, name, de
     <div className='mb-4'>
       {label &&
         <label
-          className={cx({
+          className={clsx({
             'text-sm mb-1': true,
             [labelClasses]: !! labelClasses
           })}>
-          {label}
+          {label} {required && <span className='text-red-500'>*</span>}
         </label>
       }
       <div className='relative'>
@@ -26,12 +26,13 @@ const InputField = ({ type = 'text', label, labelClasses, inputClasses, name, de
           type={type}
           {...register(name)}
           {...props}
-          className={cx({
+          className={clsx({
             'w-full border border-light-coffee p-3 rounded-sm outline-none focus:outline-none': true,
             [inputClasses]: !!inputClasses,
             'border-red-500': error
           })}
           value={defaultValue}
+          step={step}
         />
         {error && <p className='text-red-500 absolute right-0 -top-6 text-sm'>{error.message}</p>}
       </div>

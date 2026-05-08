@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
-import cx from 'classnames'
+import clsx from 'clsx'
 import { BsBag } from 'react-icons/bs'
 import { CiMenuFries } from 'react-icons/ci'
 import { useDispatch, useSelector } from 'react-redux'
@@ -48,13 +48,13 @@ const Header = () => {
   }, [scrollY])
 
   return (
-    <header className={cx(
+    <header className={clsx(
       'p-4 transition-all duration-300 z-40 fixed top-0 left-0 w-full',
       scrolled ? ' bg-secondary' : 'bg-light-coffee'
     )} ref={headerRef}>
       <nav className='ct-container mx-auto flex flex-row justify-between items-center'>
         <div className='logo basis-2/6 text-center text-xl font-semibold cursor-pointer text-white lg:basis-1/6'>Coffee shop</div>
-        <ul className={cx(
+        <ul className={clsx(
           'uppercase text-sm text-white font-bold absolute left-0 z-10 w-full overflow-hidden transition-all duration-300 px-4',
           'lg:flex basis-4/6 lg:items-center lg:justify-end lg:gap-8 lg:static lg:bg-transparent lg:p-0',
           scrolled ? 'bg-secondary' : 'bg-light-coffee'

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import { useSelector, useDispatch } from 'react-redux'
@@ -6,21 +6,29 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { object, string } from 'yup'
 import { toast } from 'react-toastify'
+import { isEmpty } from 'lodash'
 import { useRouter } from 'next/router'
 
 import { priceHelpers } from '@/helpers'
-import { closeCart } from '@/store/cartSlice'
 import InputField from '@/components/form/InputField'
 import { EmptyLayout } from '@/components/layout'
 import FadeUpAnimation from '@/components/common/FadeUpAnimation'
 import Button from '@/components/common/Button'
+import { createOrder, CREATE_ORDER } from '@/store/orderSlice'
+import { checkPromotionCode } from '@/store/promotionSlice'
+import { closeCart, clearCart } from '@/store/cartSlice'
+import { createLoadingSelector } from '@/store/loaderSlice'
+import { OERDER_STATUS, ROUTES, PROMOTION_TYPE } from '@/constants'
 
 export default function CheckoutPage() {
   const dispatch = useDispatch()
+  const loadingSelector = createLoadingSelector([CREATE_ORDER])
+  const isLoading = useSelector(state => loadingSelector(state.loader))
   const router = useRouter()
   const carts = useSelector((state) => state.cart.items)
   const [discountCode, setDiscountCode] = useState('')
   const [discountValue, setDiscountValue] = useState(0)
+  const applyTextBtn = discountValue === 0 ? 'Apply' : 'Applied'
 
   const schema = object({
     name: string().required('Please enter your name'),
@@ -33,7 +41,8 @@ export default function CheckoutPage() {
     defaultValues: {
       name: '',
       phone: '',
-      address: ''
+      address: '',
+      note: ''
     }
   })
 
@@ -42,30 +51,7 @@ export default function CheckoutPage() {
     dispatch(closeCart())
   }
 
-  const handleApplyDiscount = () => {
-    if (discountCode === 'SALE10') {
-      setDiscountValue(0.1) // 10%
-      toast.success('Apply discount 10% successfully')
-    } else if (discountCode === 'SAVE20') {
-      setDiscountValue(20) // 20 USD
-      toast.success('Apply discount 20 USD successfully')
-    } else {
-      setDiscountValue(0)
-      toast.error('Invalid discount code')
-    }
-  }
-
   const subtotal = priceHelpers.handleTotalPrice(carts)
-
-  // const total = () => {
-  //   if (discountValue < 1) {
-  //   // % discount
-  //     return Math.round(subtotal * (1 - discountValue) * 100) / 100
-  //   } else {
-  //   // fixed discount
-  //     return Math.max(0, subtotal - discountValue)
-  //   }
-  // }
 
   const totalPrice = useMemo(() => {
     if (discountValue < 1) {
@@ -75,7 +61,84 @@ export default function CheckoutPage() {
     }
   }, [subtotal, discountValue])
 
-  const onSubmit = (data) => console.log(data)
+  const handleApplyDiscount = async () => {
+    try {
+      const result = await dispatch(checkPromotionCode({ code: discountCode })).unwrap()
+
+      if (result.type === PROMOTION_TYPE.PERCENT) {
+        const discount = (totalPrice * Number(result.value)) / 100
+        setDiscountValue(discount)
+      }
+      if (result.type === PROMOTION_TYPE.CASH) {
+        setDiscountValue(Number(result.value))
+      }
+
+      toast.success('Apply discount successfully')
+
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
+  const buildOrderData = (carts) => {
+    const items = carts.map((item) => ({
+      product_id: item._id,
+      name: item.name,
+      slug: item.slug,
+      image: item.image,
+      on_sale: item.on_sale,
+      origin_price: item.origin_price,
+      promotion_price: item.promotion_price || null,
+      quantity: item.quantity,
+      final_price: item.promotion_price || item.origin_price
+    }))
+    const total_items = items.reduce(
+      (sum, item) => sum + item.quantity,
+      0
+    )
+    const total_price = items.reduce(
+      (sum, item) => sum + item.final_price * item.quantity,
+      0
+    )
+    return {
+      items,
+      total_items,
+      total_price
+    }
+  }
+
+  const onSubmit = async (data) => {
+    const orderData = {
+      items: buildOrderData(carts).items,
+      shipping_info: {
+        name: data.name,
+        phone: data.phone,
+        address: data.address,
+        note: data.note
+      },
+      order_status: OERDER_STATUS.NEW,
+      total_items: buildOrderData(carts).items,
+      total_price: buildOrderData(carts).total_price,
+      discount: discountValue,
+      final_total: buildOrderData(carts).total_price - discountValue,
+      createdAt: Date.now(),
+      updatedAt: null,
+      _destroy: false
+    }
+    try {
+      await dispatch(createOrder(orderData)).unwrap()
+      toast.success('Order created successfully')
+      dispatch(clearCart())
+      dispatch(closeCart())
+      router.push(ROUTES.THANKYOU_PAGE)
+    } catch (error) {
+      toast.error(error?.message || 'Create order failed')
+    }
+  }
+
+  useEffect(() => {
+    if (isEmpty(carts)) router.push(ROUTES.HOMEPAGE)
+  }, [])
 
   return (
     <>
@@ -95,21 +158,30 @@ export default function CheckoutPage() {
                       <h2 className='text-3xl font-bold mb-4'>Your info</h2>
                       <div className=''>
                         <InputField
-                          name="name"
-                          label="Name"
+                          name='name'
+                          label='Name'
                           labelClasses='text-light-coffee text-left block'
                           inputClasses='text-secondary'
+                          required
                         />
                         <InputField
                           type='number'
-                          name="phone"
-                          label="Phone number"
+                          name='phone'
+                          label='Phone number'
                           labelClasses='text-light-coffee text-left block'
                           inputClasses='text-secondary'
+                          required
                         />
                         <InputField
-                          name="address"
-                          label="Address"
+                          name='address'
+                          label='Address'
+                          labelClasses='text-light-coffee text-left block'
+                          inputClasses='text-secondary'
+                          required
+                        />
+                        <InputField
+                          name='note'
+                          label='Note'
                           labelClasses='text-light-coffee text-left block'
                           inputClasses='text-secondary'
                         />
@@ -125,9 +197,12 @@ export default function CheckoutPage() {
                                 <Image src={product?.image} className='object-center object-cover mr-2 rounded-md' width={50} height={50} alt='product' loading='eager' />
                                 <span className='absolute right-0 top-0 inline-flex rounded-full text-white bg-light-coffee/80 w-5 h-5 justify-center items-center'>{product?.quantity}</span>
                               </div>
-                              <div>{product?.name}</div>
+                              <div>
+                                {product?.name}
+                                <span className='font-bold ml-1'>(${product?.on_sale ? product?.promotion_price : product?.origin_price} USD)</span>
+                              </div>
                             </div>
-                            <span className=''>{priceHelpers.handleSubPrice(product)} USD</span>
+                            <span className='font-bold'>{priceHelpers.handleSubPrice(product)} USD</span>
                           </div>)
                           : <p>Empty cart</p>
                       }
@@ -137,15 +212,24 @@ export default function CheckoutPage() {
                           className='px-4 py-2 w-[70%] outline-none focus:outline-none'
                           value={discountCode}
                           onChange={(e) => setDiscountCode(e.target.value)}
+                          disabled={discountValue !== 0}
                         />
-                        <Button size='sm' onClick={handleApplyDiscount}>Apply</Button>
+                        <Button size='sm' onClick={handleApplyDiscount} disabled={isEmpty(discountCode.trim()) || discountValue !== 0}>{applyTextBtn}</Button>
                       </div>
+                      {
+                        discountValue !== 0 && (
+                          <div className='flex justify-between pt-5 text-light-coffee'>
+                            <span className='text-md font-bold'>Discount</span>
+                            <span className='text-md font-bold'>{discountValue} USD</span>
+                          </div>
+                        )
+                      }
                       <div className='flex justify-between py-5'>
                         <span className='text-xl font-bold'>Total</span>
                         <span className='text-xl font-bold'>{totalPrice} USD</span>
                       </div>
                       <div className='sm:grid grid-cols-2 items-center gap-6'>
-                        <Button type='submit' className='w-full sm:order-2'>Checkout</Button>
+                        <Button loading={isLoading} type='submit' className='w-full sm:order-2'>{isLoading ? 'Processing...' : 'Checkout'}</Button>
                         <Button type='button' variant='secondary' className='w-full sm:order-1 hover:bg-secondary-hover' onClick={handleBack}>Back</Button>
                       </div>
                     </div>

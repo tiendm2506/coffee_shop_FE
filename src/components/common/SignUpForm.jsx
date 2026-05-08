@@ -5,9 +5,16 @@ import InputField from '../form/InputField'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { object, string } from 'yup'
 import Button from './Button'
-
+import { useDispatch, useSelector } from 'react-redux'
+import { createClient, CREATE_CLIENT } from '@/store/clientSlice'
+import { toast } from 'react-toastify'
+import { createLoadingSelector } from '@/store/loaderSlice'
 
 const SignUpForm = () => {
+  const dispatch = useDispatch()
+  const loadingSelector = createLoadingSelector([CREATE_CLIENT])
+  const isLoading = useSelector((state) => loadingSelector(state.loader))
+
   const schema = object({
     name: string().required('Please enter your name'),
     email: string().required('Please enter your email').email('Email is invalid'),
@@ -23,7 +30,17 @@ const SignUpForm = () => {
     }
   })
 
-  const onSubmit = (data) => console.log(data)
+  const { reset } = methods
+
+  const onSubmit = async(data) => {
+    try {
+      await dispatch(createClient({ ...data })).unwrap()
+      toast.success('Successfully. Please check your email.')
+      reset()
+    } catch (error) {
+      toast.error(error?.message)
+    }
+  }
 
   return (
     <section className='px-4 bg-secondary py-25 text-center'>
@@ -34,26 +51,29 @@ const SignUpForm = () => {
           <form onSubmit={methods.handleSubmit(onSubmit)}>
             <div className='lg:grid lg:grid-cols-3 lg:gap-4'>
               <InputField
-                name="name"
-                label="Name"
+                name='name'
+                label='Name'
                 labelClasses='text-white text-left block'
                 inputClasses='text-white'
+                required
               />
               <InputField
-                name="email"
-                label="Email"
+                name='email'
+                label='Email'
                 labelClasses='text-white text-left block'
                 inputClasses='text-white'
+                required
               />
               <InputField
                 type='number'
-                name="phone"
-                label="Phone number"
+                name='phone'
+                label='Phone number'
                 labelClasses='text-white text-left block'
                 inputClasses='text-white'
+                required
               />
             </div>
-            <Button type='submit' variant='outline' className='hover:bg-light-coffee hover:text-white'>SUBSCRIBE</Button>
+            <Button loading={isLoading} type='submit' variant='outline' className='hover:bg-light-coffee hover:text-white uppercase'>{isLoading ? 'Processing...' : 'SUBSCRIBE'}</Button>
           </form>
         </FormProvider>
       </div>

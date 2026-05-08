@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaSortDown } from 'react-icons/fa';
+import { FaSortDown } from 'react-icons/fa'
 
 const Select = ({
   options = [],

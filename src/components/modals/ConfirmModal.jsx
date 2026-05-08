@@ -15,10 +15,10 @@ const ConfirmModal=({ name }) => {
   if (!isOpen || modalName !== name) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="bg-white rounded-lg p-6 w-full lg:w-120">
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4'>
+      <div className='bg-white rounded-lg p-6 w-full lg:w-120'>
 
-        <h2 className="text-lg font-bold mb-4">{title}</h2>
+        <h2 className='text-lg font-bold mb-4'>{title}</h2>
 
         <p>
           {typeof content === 'function'
@@ -26,16 +26,16 @@ const ConfirmModal=({ name }) => {
             : content}
         </p>
 
-        <div className="flex justify-end gap-2 mt-4">
+        <div className='flex justify-end gap-2 mt-4'>
           <button
-            className="px-4 py-1 border rounded cursor-pointer"
+            className='px-4 py-1 border rounded cursor-pointer'
             onClick={() => dispatch(closeModal())}
           >
             {cancelText}
           </button>
 
           <button
-            className="px-4 py-1 bg-red-500 text-white rounded cursor-pointer"
+            className='px-4 py-1 bg-red-500 text-white rounded cursor-pointer'
             onClick={() => {
               onConfirm && onConfirm(data) // callback
               dispatch(closeModal())

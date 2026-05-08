@@ -1,0 +1,142 @@
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import clsx from 'clsx'
+import { FaTrash } from 'react-icons/fa6'
+import { FaEye } from 'react-icons/fa'
+import { toast } from 'react-toastify'
+
+import Pagination from '@/components/common/Pagination'
+import { AdminLayout } from '@/components/layout'
+import OrderDetailModal from '@/components/modals/OrderDetailModal'
+import { openModal } from '@/store/modalSlice'
+import { getListOrders, selectListOrders, deleteOrderById } from '@/store/orderSlice'
+import { datetimeHelpers } from '@/helpers'
+import { OERDER_STATUS } from '@/constants'
+
+const OrderPage = () => {
+  const dispatch = useDispatch()
+  const orderList = useSelector(selectListOrders)
+  const pagination = useSelector(state => state.order.pagination)
+  const [page, setPage] = useState(1)
+
+  const handleEditOrder = (order) => {
+    dispatch(
+      openModal({
+        name: 'ORDER_MODAL',
+        data: order
+      })
+    )
+  }
+
+  const handleDelete = (order) => {
+    dispatch(
+      openModal({
+        type: 'CONFIRM',
+        name: 'CONFIRM_MODAL',
+        data: order,
+        props: {
+          title: 'Delete order',
+          content: () => (
+            <>
+              You want to delete order customer <b>{order?.shipping_info?.name}</b> ?
+            </>
+          ),
+          confirmText: 'Delete',
+          onConfirm: async (order) => {
+            try {
+              await dispatch(
+                deleteOrderById({ orderId: order?._id })
+              ).unwrap()
+              toast.success('Delete order successfully')
+            } catch (error) {
+              toast.error('Delete failed')
+            }
+          }
+        }
+      })
+    )
+  }
+
+  useEffect(() => {
+    dispatch(getListOrders())
+  }, [])
+
+  useEffect(() => {
+    dispatch(getListOrders({ page }))
+  }, [page])
+
+
+  return (
+    <AdminLayout>
+      <section>
+        <h1 className='text-3xl font-bold mb-5'>List order</h1>
+        <div className='bg-white rounded-lg shadow overflow-hidden'>
+          <table className='w-full text-sm text-left'>
+            <thead className='bg-gray-100 text-gray-600 uppercase text-xs'>
+              <tr>
+                <th className='px-4 py-3'>#</th>
+                <th className='px-4 py-3'>Customer</th>
+                <th className='px-4 py-3'>Phone</th>
+                <th className='px-4 py-3'>Address</th>
+                <th className='px-4 py-3'>Note</th>
+                <th className='px-4 py-3'>Total</th>
+                <th className='px-4 py-3'>Discount</th>
+                <th className='px-4 py-3'>Final Total</th>
+                <th className='px-4 py-3'>Status</th>
+                <th className='px-4 py-3'>Order Date</th>
+                <th className='px-4 py-3'>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              { orderList.length === 0 && (
+                <tr>
+                  <td colSpan={11} className='p-4 font-bold'>Empty order</td>
+                </tr>
+              ) }
+              {
+                orderList && orderList.map((order, index) => (
+                  <tr key={index} className='border-b hover:bg-gray-200'>
+                    <td className='px-4 py-3 font-medium'>{index + 1}</td>
+                    <td className='px-4 py-3 font-medium'>{order?.shipping_info?.name}</td>
+                    <td className='px-4 py-3 font-medium'>{order?.shipping_info?.phone}</td>
+                    <td className='px-4 py-3 font-medium'>{order?.shipping_info?.address}</td>
+                    <td className='px-4 py-3 font-medium'>{order?.shipping_info?.note || 'No note'}</td>
+                    <td className='px-4 py-3'><b>{order?.total_price}</b> USD</td>
+                    <td className='px-4 py-3'><b>{order?.discount || 0}</b> USD</td>
+                    <td className='px-4 py-3'><b>{order?.final_total}</b> USD</td>
+                    <td className='px-4 py-3'>
+                      <span className={clsx({
+                        'rounded-2xl p-1 inline-block w-22 text-center': true,
+                        'bg-green-200': order?.order_status === OERDER_STATUS.NEW,
+                        'bg-gray-200': order?.order_status === OERDER_STATUS.CANCELED,
+                        'bg-blue-200': order?.order_status === OERDER_STATUS.COMPLETED
+                      })}>{order?.order_status}
+                      </span>
+                    </td>
+                    <td className='px-4 py-3'>{datetimeHelpers.formatDate(order?.createdAt, 'en')}</td>
+                    <td className='px-4 py-3'>
+                      <div className='flex items-center'>
+                        <FaEye size={20} className='mx-4 cursor-pointer transition-all hover:scale-[1.2]' onClick={() => handleEditOrder(order)} />
+                        <FaTrash size={20} className='cursor-pointer transition-all hover:scale-[1.2]' onClick={() => handleDelete(order)} />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <Pagination
+          currentPage={page}
+          totalPages={pagination.totalPages}
+          onPageChange={setPage}
+        />
+
+      </section>
+      <OrderDetailModal name='ORDER_MODAL' />
+    </AdminLayout>
+  )
+}
+
+export default OrderPage

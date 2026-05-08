@@ -2,7 +2,9 @@ import React, { useEffect, useRef } from 'react'
 import { IoMdClose } from 'react-icons/io'
 import clsx from 'clsx'
 import { useSelector, useDispatch } from 'react-redux'
-import Link from 'next/link'
+import { isEmpty } from 'lodash'
+import { toast } from 'react-toastify'
+import { useRouter } from 'next/router'
 
 import { priceHelpers } from '@/helpers'
 import { ROUTES } from '@/constants'
@@ -12,6 +14,7 @@ import Button from '@/components/common/Button'
 
 const Cart = () => {
   const dispatch = useDispatch()
+  const router = useRouter()
   const cartRef = useRef(null)
   const isOpen = useSelector((state) => state.cart.isOpen)
   const carts = useSelector((state) => state.cart.items)
@@ -24,6 +27,11 @@ const Cart = () => {
     if (cartRef.current && !cartRef.current.contains(event.target)) {
       dispatch(closeCart())
     }
+  }
+
+  const handleCheckout = () => {
+    if (isEmpty(carts)) return toast.error('Your cart is empty. Please add product to cart first.')
+    router.push(ROUTES.CHECKOUT_PAGE)
   }
 
   useEffect(() => {
@@ -61,9 +69,7 @@ const Cart = () => {
           <span>Total</span>
           <span>{priceHelpers.handleTotalPrice(carts)} USD</span>
         </div>
-        <Link href={ROUTES.CHECKOUT_PAGE}>
-          <Button variant='outline' className='uppercase w-full hover:bg-light-coffee hover:text-white'>Continue to checkout</Button>
-        </Link>
+        <Button variant='outline' className='uppercase w-full hover:bg-light-coffee hover:text-white' onClick={() => handleCheckout()}>Continue to checkout</Button>
       </div>
     </div>
   )
