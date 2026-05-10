@@ -1,14 +1,15 @@
 import React from 'react'
-import HeadlineTag from '../HeadlineTag'
 import { FormProvider, useForm } from 'react-hook-form'
-import InputField from '../form/InputField'
+import { toast } from 'react-toastify'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { object, string } from 'yup'
-import Button from './Button'
 import { useDispatch, useSelector } from 'react-redux'
+
 import { createClient, CREATE_CLIENT } from '@/store/clientSlice'
-import { toast } from 'react-toastify'
 import { createLoadingSelector } from '@/store/loaderSlice'
+import HeadlineTag from '../HeadlineTag'
+import InputField from '../form/InputField'
+import Button from './Button'
 
 const SignUpForm = () => {
   const dispatch = useDispatch()

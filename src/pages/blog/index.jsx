@@ -1,12 +1,28 @@
 import Head from 'next/head'
 import Link from 'next/link'
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 
 import { MainLayout } from '@/components/layout'
 import HeadlineTag from '@/components/HeadlineTag'
 import Post from '@/components/blog/Post'
 import FadeUpAnimation from '@/components/common/FadeUpAnimation'
+import { getListPosts, selectListPosts, selectHighlightPosts } from '@/store/postSlice'
 
 export default function BlogPage() {
+  const dispatch = useDispatch()
+  const posts = useSelector(selectListPosts)
+  const highlightPosts = useSelector(selectHighlightPosts)
+  // console.log('post: ', posts)
+  console.log('highlightPosts: ', highlightPosts)
+
+  useEffect(() => {
+    Promise.all([
+      dispatch(getListPosts({ limit: 4 })),
+      dispatch(getListPosts({ limit: 2, highlight: true }))
+    ])
+  }, [dispatch])
+
   return (
     <>
       <Head>
@@ -43,6 +59,7 @@ export default function BlogPage() {
               <div>
                 <h3 className='text-secondary text-2xl border-b border-b-[#ececed] pb-6 mb-6'>Latest Posts</h3>
                 <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
+
                   <Post title='Health Check: why do I get a headache when I have not had my coffee?' description='It is a paradisematic country, in which roasted parts of sentences fly into your mouth.' date='October 9, 2018' thumb='/images/blogs/blog-1.jpg' />
                   <Post title='How long does a cup of coffee keep you awake?' description='It is a paradisematic country, in which roasted parts. Vel qui et ad voluptatem.' date='October 9, 2018' thumb='/images/blogs/blog-2.jpg' />
                   <Post title='Recent research suggests that heavy coffee drinkers may reap health benefits. ' description='It is a paradisematic country, in which roasted parts of sentences fly into your mouth.' date='October 9, 2018' thumb='/images/blogs/blog-3.jpg' />

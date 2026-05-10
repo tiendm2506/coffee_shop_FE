@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import Head from 'next/head'
 import { useSelector, useDispatch } from 'react-redux'
+import { useRouter } from 'next/router'
 
 import { getPostDetail, selectPostDetail } from '@/store/postSlice'
 import { MainLayout } from '@/components/layout'
@@ -9,11 +10,14 @@ import FadeUpAnimation from '@/components/common/FadeUpAnimation'
 const BlogAdmin = () => {
   const dispatch = useDispatch()
   const post = useSelector(selectPostDetail)
-  console.log('post: ', post)
+  const router = useRouter()
+  const { slug } = router.query
+  console.log('post 123456: ', post)
+  console.log('slug: ', slug)
 
   useEffect(() => {
-    dispatch(getPostDetail({ slug: 'titel-post' }))
-  }, [dispatch])
+    dispatch(getPostDetail({ slug }))
+  }, [dispatch, slug])
 
   return (
     <>

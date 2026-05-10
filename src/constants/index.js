@@ -15,11 +15,13 @@ export const ROUTES = {
 export const ADMIN_ROUTES = {
   DASHBOARD: '/admin',
   PRODUCT_ADMIN_PAGE: '/admin/product',
-  POST_ADMIN_PAGE: '/admin/post',
+  POST_ADMIN_PAGE: '/admin/list-post',
   ORDER_ADMIN_PAGE: '/admin/order',
   CLIENT_ADMIN_PAGE: '/admin/client',
   PROMOTION_ADMIN_PAGE: '/admin/promotion',
-  CATEGORY_ADMIN_PAGE: '/admin/category'
+  CATEGORY_ADMIN_PAGE: '/admin/category',
+  LIST_POST_PAGE: '/admin/list-post',
+  CREATE_POST_PAGE: '/admin/create-post'
 }
 
 export const API_ENDPOINTS = {
@@ -60,7 +62,7 @@ export const API_ENDPOINTS = {
   DELETE_CLIENT_BY_ID: '/client/remove/:id',
   GET_LIST_CLIENTS: '/client/list',
 
-  UPLOAD_IMAGE: '/upload'
+  UPLOAD_IMAGE: '/upload/image'
 }
 
 export const PROMOTION_TYPE = {

@@ -1,19 +1,20 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { closeModal } from '@/store/modalSlice'
-import InputField from '../form/InputField'
+import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { object, string, number, boolean } from 'yup'
-import SwitchButton from '../admin/SwitchButton'
-import { useEffect, useState } from 'react'
-import { stringHelpers } from '@/helpers'
-import { createProduct, updateProduct } from '@/store/productSlice'
 import { toast } from 'react-toastify'
 import { isEmpty } from 'lodash'
+
+import InputField from '../form/InputField'
+import SelectField from '../form/SelectField'
+import SwitchButton from '../admin/SwitchButton'
 import Button from '../common/Button'
 import { selectListCategories, getListCategories } from '@/store/categorySlice'
-import SelectField from '../form/SelectField'
+import { createProduct, updateProduct } from '@/store/productSlice'
+import { closeModal } from '@/store/modalSlice'
 import { STATUS } from '@/constants'
+import { stringHelpers } from '@/helpers'
 
 const ProductModal = ({ name }) => {
   const dispatch = useDispatch()

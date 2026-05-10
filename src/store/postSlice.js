@@ -5,6 +5,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 const initialState = {
   postList: [],
   postDetail: null,
+  highlightPosts: [],
   pagination: {}
 }
 
@@ -98,8 +99,12 @@ const postSlice = createSlice({
     })
     builder.addCase(getListPosts.fulfilled, (state, action) => {
       const { posts, pagination } = action.payload
-      state.postList = posts
-      state.pagination = pagination
+      if (action.meta.arg?.highlight === true) {
+        state.highlightPosts = posts
+      } else {
+        state.postList = posts
+        state.pagination = pagination
+      }
     })
     builder.addCase(getPostDetail.fulfilled, (state, action) => {
       state.postDetail = action.payload
@@ -108,6 +113,7 @@ const postSlice = createSlice({
 })
 
 export const selectListPosts = (state) => state.post.postList
+export const selectHighlightPosts = (state) => state.post.highlightPosts
 export const selectPostDetail = (state) => state.post.postDetail
 
 export default postSlice.reducer
