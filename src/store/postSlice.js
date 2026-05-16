@@ -29,6 +29,26 @@ export const createPost = createAsyncThunk(
   }
 )
 
+export const UPDATE_POST = 'PostState/UPDATE_POST'
+export const updatePost = createAsyncThunk(
+  UPDATE_POST,
+  async ({ postId, ...params }, { rejectWithValue }) => {
+    try {
+      const response = await apiService.put(API_ENDPOINTS.UPDATE_POST.replace(':id', postId), params)
+      if (!response.success) {
+        return rejectWithValue(response.metaData)
+      }
+      return response.metaData
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || {
+          message: error.message || 'Update post failed'
+        }
+      )
+    }
+  }
+)
+
 export const DELETE_POST_BY_ID = 'PostState/DELETE_POST_BY_ID'
 export const deletePostById = createAsyncThunk(
   DELETE_POST_BY_ID,
@@ -61,22 +81,40 @@ export const getListPosts = createAsyncThunk(
   }
 )
 
-export const GET_POST_DETAIL = 'PostState/GET_POST_DETAIL'
-export const getPostDetail = createAsyncThunk(
-  GET_POST_DETAIL,
+export const GET_POST_DETAIL_BY_SLUG = 'PostState/GET_POST_DETAIL_BY_SLUG'
+export const getPostDetailBySlug = createAsyncThunk(
+  GET_POST_DETAIL_BY_SLUG,
   async ({ slug }, { rejectWithValue }) => {
     try {
-      const response = await apiService.get(API_ENDPOINTS.GET_POST_DETAIL.replace(':slug', slug))
+      const response = await apiService.get(API_ENDPOINTS.GET_POST_DETAIL_BY_SLUG.replace(':slug', slug))
       if (!response.success) {
         return rejectWithValue(response.metaData)
       }
       return response.metaData
     } catch (error) {
-      rejectWithValue(
+      return rejectWithValue(
         error.response?.data || {
-          message:
-              error.message ||
-              'Get post detail failed'
+          message:error.message | 'Get post detail failed'
+        }
+      )
+    }
+  }
+)
+
+export const GET_POST_DETAIL_BY_ID = 'PostState/GET_POST_DETAIL_BY_ID'
+export const getPostDetailById = createAsyncThunk(
+  GET_POST_DETAIL_BY_ID,
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const response = await apiService.get(API_ENDPOINTS.GET_POST_DETAIL_BY_ID.replace(':id', id))
+      if (!response.success) {
+        return rejectWithValue(response.metaData)
+      }
+      return response.metaData
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || {
+          message: error.message || 'Get post detail failed'
         }
       )
     }
@@ -86,11 +124,24 @@ export const getPostDetail = createAsyncThunk(
 const postSlice = createSlice({
   name: 'post',
   initialState,
-  reducers:{},
+  reducers:{
+    clearPostDetail: (state) => {
+      state.postDetail = null
+    }
+  },
   extraReducers: (builder) => {
     builder.addCase(createPost.fulfilled, (state, action) => {
       state.postList.unshift(action.payload)
     })
+    builder.addCase(updatePost.fulfilled, (state, action) => {
+      state.postDetail =action.payload
+      const index =
+      state.postList.findIndex( (item) => item._id ===action.payload._id)
+      if (index !== -1) {
+        state.postList[index ] = action.payload
+      }
+    }
+    )
     builder.addCase(deletePostById.fulfilled, (state, action) => {
       const deletedId = action.meta.arg.postId
       state.postList = state.postList.filter(
@@ -106,7 +157,10 @@ const postSlice = createSlice({
         state.pagination = pagination
       }
     })
-    builder.addCase(getPostDetail.fulfilled, (state, action) => {
+    builder.addCase(getPostDetailBySlug.fulfilled, (state, action) => {
+      state.postDetail = action.payload
+    })
+    builder.addCase(getPostDetailById.fulfilled, (state, action) => {
       state.postDetail = action.payload
     })
   }
@@ -115,5 +169,6 @@ const postSlice = createSlice({
 export const selectListPosts = (state) => state.post.postList
 export const selectHighlightPosts = (state) => state.post.highlightPosts
 export const selectPostDetail = (state) => state.post.postDetail
+export const { clearPostDetail } = postSlice.actions
 
 export default postSlice.reducer

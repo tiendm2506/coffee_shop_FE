@@ -3,6 +3,7 @@ import Link from 'next/link'
 import clsx from 'clsx'
 import FadeUpAnimation from '@/components/common/FadeUpAnimation'
 import Button from '../common/Button'
+import { datetimeHelpers } from '@/helpers'
 
 const Post = ({ title, thumb, description, date, url ='#' }) => {
   return (
@@ -19,7 +20,7 @@ const Post = ({ title, thumb, description, date, url ='#' }) => {
         </div>
         <Link className='mt-6 px-4 py-2 text-xl inline-block text-secondary hover:text-light-coffee transition-all duration-300' href={url}>{title}</Link>
         <div className='px-4 mb-2'>{description}</div>
-        <div className='px-4 pb-4'>{date}</div>
+        <div className='px-4 pb-4'>{datetimeHelpers.formatDate(date, 'en')}</div>
       </div>
     </FadeUpAnimation>
   )

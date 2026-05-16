@@ -8,20 +8,24 @@ import HeadlineTag from '@/components/HeadlineTag'
 import Post from '@/components/blog/Post'
 import FadeUpAnimation from '@/components/common/FadeUpAnimation'
 import { getListPosts, selectListPosts, selectHighlightPosts } from '@/store/postSlice'
+import { getListCategories, selectListCategories } from '@/store/categorySlice'
+import { ROUTES, CATEGORY_TYPE } from '@/constants'
+
 
 export default function BlogPage() {
   const dispatch = useDispatch()
   const posts = useSelector(selectListPosts)
   const highlightPosts = useSelector(selectHighlightPosts)
-  // console.log('post: ', posts)
-  console.log('highlightPosts: ', highlightPosts)
+  const categoryList = useSelector(selectListCategories)
+  console.log('categoryList: ', categoryList)
 
   useEffect(() => {
+    dispatch(getListCategories({ type: CATEGORY_TYPE.POST }))
     Promise.all([
       dispatch(getListPosts({ limit: 4 })),
       dispatch(getListPosts({ limit: 2, highlight: true }))
     ])
-  }, [dispatch])
+  }, [])
 
   return (
     <>
@@ -35,7 +39,7 @@ export default function BlogPage() {
           <section className='py-25 px-4'>
             <div className='ct-container mx-auto'>
               <h1 className='text-4xl text-secondary text-center'>Read coffee stories on our Blog</h1>
-              <h4 className='text-lg mt-4 mb-10 text-center'>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique.</h4>
+              <h4 className='text-lg mt-4 mb-10 text-center max-w-140 mx-auto'>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique.</h4>
             </div>
           </section>
         </FadeUpAnimation>
@@ -45,8 +49,18 @@ export default function BlogPage() {
             <div className='ct-container mx-auto'>
               <HeadlineTag title='Hightlight post' />
               <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-                <Post title='Health Check: why do I get a headache when I have not had my coffee?' description='It is a paradisematic country, in which roasted parts of sentences fly into your mouth.' date='October 9, 2018' thumb='/images/blogs/blog-1.jpg' />
-                <Post title='How long does a cup of coffee keep you awake?' description='It is a paradisematic country, in which roasted parts. Vel qui et ad voluptatem.' date='October 9, 2018' thumb='/images/blogs/blog-2.jpg' />
+                {
+                  highlightPosts.map((post) =>
+                    <Post
+                      key={post?._id}
+                      title={post?.title}
+                      description={post?.description}
+                      date={post?.createdAt}
+                      thumb={post?.thumbnail}
+                      url={ROUTES.BLOG_DETAIL_PAGE.replace(':slug', post?.slug)}
+                    />
+                  )
+                }
               </div>
             </div>
           </section>
@@ -59,11 +73,18 @@ export default function BlogPage() {
               <div>
                 <h3 className='text-secondary text-2xl border-b border-b-[#ececed] pb-6 mb-6'>Latest Posts</h3>
                 <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-
-                  <Post title='Health Check: why do I get a headache when I have not had my coffee?' description='It is a paradisematic country, in which roasted parts of sentences fly into your mouth.' date='October 9, 2018' thumb='/images/blogs/blog-1.jpg' />
-                  <Post title='How long does a cup of coffee keep you awake?' description='It is a paradisematic country, in which roasted parts. Vel qui et ad voluptatem.' date='October 9, 2018' thumb='/images/blogs/blog-2.jpg' />
-                  <Post title='Recent research suggests that heavy coffee drinkers may reap health benefits. ' description='It is a paradisematic country, in which roasted parts of sentences fly into your mouth.' date='October 9, 2018' thumb='/images/blogs/blog-3.jpg' />
-                  <Post title='Health Check: why do I get a headache when I have not had my coffee?' description='It is a paradisematic country, in which roasted parts of sentences fly into your mouth.' date='October 9, 2018' thumb='/images/blogs/blog-1.jpg' />
+                  {
+                    posts.map((post) =>
+                      <Post
+                        key={post?._id}
+                        title={post?.title}
+                        description={post?.description}
+                        date={post?.createdAt}
+                        thumb={post?.thumbnail}
+                        url={ROUTES.BLOG_DETAIL_PAGE.replace(':slug', post?.slug)}
+                      />
+                    )
+                  }
                 </div>
               </div>
 
@@ -72,10 +93,9 @@ export default function BlogPage() {
                 <div>
                   <h3 className='text-secondary text-2xl border-b border-b-[#ececed] pb-6 mb-6'>Categories</h3>
                   <ul>
-                    <li><Link className='ct-category-item' href='#'>Barista</Link></li>
-                    <li><Link className='ct-category-item' href='#'>Coffee</Link></li>
-                    <li><Link className='ct-category-item' href='#'>Lifestyle</Link></li>
-                    <li><Link className='ct-category-item' href='#'>Mugs</Link></li>
+                    {
+                      categoryList.map((cat) => <li key={cat?._id}><Link className='ct-category-item' href='#'>{cat?.name}</Link></li>)
+                    }
                   </ul>
                 </div>
               </FadeUpAnimation>

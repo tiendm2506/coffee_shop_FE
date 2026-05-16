@@ -6,13 +6,17 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import clsx from 'clsx'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
 
 import { AdminLayout } from '@/components/layout'
 import Pagination from '@/components/common/Pagination'
+import Button from '@/components/common/Button'
 import { getListPosts, selectListPosts } from '@/store/postSlice'
 import { openModal } from '@/store/modalSlice'
 import { deletePostById } from '@/store/postSlice'
 import { datetimeHelpers } from '@/helpers'
+import { ADMIN_ROUTES } from '@/constants'
 
 
 const ListPostPage = () => {
@@ -20,6 +24,14 @@ const ListPostPage = () => {
   const posts = useSelector(selectListPosts)
   const pagination = useSelector(state => state.promotion.pagination)
   const [page, setPage] = useState(1)
+
+  const router = useRouter()
+
+  const handleEdit = (postId) => {
+    router.push(
+      ADMIN_ROUTES.UPDATE_POST_PAGE.replace(':id', postId)
+    )
+  }
 
   const handleDelete = (post) => {
     dispatch(
@@ -52,7 +64,7 @@ const ListPostPage = () => {
 
   useEffect(() => {
     dispatch(getListPosts())
-  }, [dispatch])
+  }, [])
 
   return (
     <>
@@ -94,7 +106,7 @@ const ListPostPage = () => {
                       <td className='px-4 py-3 font-medium'><span className={clsx(post?.highlight ? 'bg-green-100 text-green-700 font-bold px-2 rounded-lg' : '')}>{post?.highlight ? 'Highlight' : 'No'}</span></td>
                       <td className='px-4 py-3 font-medium'>{datetimeHelpers.formatDate(post?.createdAt, 'en')}</td>
                       <td className='px-4 py-3 flex items-center gap-4'>
-                        <CiEdit size={20} className='cursor-pointer transition-all hover:scale-[1.2]' onClick={() => handleDelete(post)} />
+                        <CiEdit size={20} className='cursor-pointer transition-all hover:scale-[1.2]' onClick={() => handleEdit(post?._id)} />
                         <FaTrash size={20} className='cursor-pointer transition-all hover:scale-[1.2]' onClick={() => handleDelete(post)} />
                       </td>
                     </tr>
@@ -109,6 +121,12 @@ const ListPostPage = () => {
             totalPages={pagination.totalPages}
             onPageChange={setPage}
           />
+
+          <div className='text-right mt-6'>
+            <Link href={ADMIN_ROUTES.CREATE_POST_PAGE}>
+              <Button size='sm' variant='secondary'>Create post</Button>
+            </Link>
+          </div>
 
         </section>
       </AdminLayout>

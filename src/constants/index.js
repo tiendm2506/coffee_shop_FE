@@ -6,6 +6,7 @@ export const ROUTES = {
   PRODUCTS_PAGE: '/products',
   PRODUCTS_DETAIL_PAGE: '/products/:slug',
   BLOG_PAGE: '/blog',
+  BLOG_DETAIL_PAGE: '/blog/:slug',
   ABOUT_PAGE: '/about',
   CONTACT_PAGE: '/contact',
   CHECKOUT_PAGE: '/checkout',
@@ -15,13 +16,13 @@ export const ROUTES = {
 export const ADMIN_ROUTES = {
   DASHBOARD: '/admin',
   PRODUCT_ADMIN_PAGE: '/admin/product',
-  POST_ADMIN_PAGE: '/admin/list-post',
   ORDER_ADMIN_PAGE: '/admin/order',
   CLIENT_ADMIN_PAGE: '/admin/client',
   PROMOTION_ADMIN_PAGE: '/admin/promotion',
   CATEGORY_ADMIN_PAGE: '/admin/category',
-  LIST_POST_PAGE: '/admin/list-post',
-  CREATE_POST_PAGE: '/admin/create-post'
+  LIST_POST_PAGE: '/admin/post/list',
+  CREATE_POST_PAGE: '/admin/post/create',
+  UPDATE_POST_PAGE: '/admin/post/:id'
 }
 
 export const API_ENDPOINTS = {
@@ -56,7 +57,8 @@ export const API_ENDPOINTS = {
   UPDATE_POST: '/post/update/:id',
   DELETE_POST_BY_ID: '/post/remove/:id',
   GET_LIST_POSTS: '/post/list',
-  GET_POST_DETAIL: '/post/:slug',
+  GET_POST_DETAIL_BY_SLUG: '/post/:slug',
+  GET_POST_DETAIL_BY_ID: '/post/detail/:id',
 
   CREATE_CLIENT: '/client/create',
   DELETE_CLIENT_BY_ID: '/client/remove/:id',

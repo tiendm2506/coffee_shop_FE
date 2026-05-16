@@ -13,7 +13,7 @@ import Button from '../common/Button'
 import { selectListCategories, getListCategories } from '@/store/categorySlice'
 import { createProduct, updateProduct } from '@/store/productSlice'
 import { closeModal } from '@/store/modalSlice'
-import { STATUS } from '@/constants'
+import { CATEGORY_TYPE, STATUS } from '@/constants'
 import { stringHelpers } from '@/helpers'
 
 const ProductModal = ({ name }) => {
@@ -197,8 +197,8 @@ const ProductModal = ({ name }) => {
   }, [categoriesFetch])
 
   useEffect(() => {
-    dispatch(getListCategories())
-  }, [dispatch])
+    dispatch(getListCategories({ type: CATEGORY_TYPE.PRODUCT }))
+  }, [])
 
   if (!isOpen || modalName !== name) return null
 

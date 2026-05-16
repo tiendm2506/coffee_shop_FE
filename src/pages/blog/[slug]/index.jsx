@@ -3,7 +3,7 @@ import Head from 'next/head'
 import { useSelector, useDispatch } from 'react-redux'
 import { useRouter } from 'next/router'
 
-import { getPostDetail, selectPostDetail } from '@/store/postSlice'
+import { getPostDetailBySlug, selectPostDetail } from '@/store/postSlice'
 import { MainLayout } from '@/components/layout'
 import FadeUpAnimation from '@/components/common/FadeUpAnimation'
 
@@ -16,7 +16,7 @@ const BlogAdmin = () => {
   console.log('slug: ', slug)
 
   useEffect(() => {
-    dispatch(getPostDetail({ slug }))
+    dispatch(getPostDetailBySlug({ slug }))
   }, [dispatch, slug])
 
   return (

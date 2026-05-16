@@ -23,7 +23,7 @@ export default function Home() {
       dispatch(getListProducts({ limit: 6 })),
       dispatch(getListProducts({ limit: 2, highlight: true }))
     ])
-  }, [dispatch])
+  }, [])
 
   return (
     <>

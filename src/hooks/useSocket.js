@@ -28,5 +28,5 @@ export const useSocket = () => {
       socket.off('connect', handleConnect)
       socket.off('new_order', handleNewOrder)
     }
-  }, [dispatch])
+  }, [])
 }
