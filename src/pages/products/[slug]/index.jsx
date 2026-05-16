@@ -25,6 +25,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
   const currentProduct = useSelector(selectCurrentProduct)
   const [relatedProducts, setRelatedProducts] = useState([])
+  const [thumb, setThumb] = useState('')
 
   const handleAddProductToCart = () => {
     dispatch(addToCart({
@@ -44,6 +45,10 @@ export default function ProductDetailPage() {
     }
   }
 
+  const handleChangeThumb = (src) => {
+    setThumb(src)
+  }
+
   useEffect(() => {
     setQuantity(1)
     if (!slug) return
@@ -52,6 +57,7 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (!currentProduct?.category?.slug) return
+    setThumb(currentProduct.images?.[0])
     const getRelatedProducts = async () => {
       try {
         const data = await dispatch(
@@ -80,10 +86,29 @@ export default function ProductDetailPage() {
           <section className='pt-30 pb-15 px-4'>
             <div className='max-w-235 mx-auto'>
               <div className='sm:grid sm:grid-cols-2 sm:gap-4'>
-                <div className='relative'>
-                  <img className='w-full' src={currentProduct?.image} alt={currentProduct?.name} />
-                  {currentProduct?.on_sale && <span className='absolute right-4 top-4 z-30 inline-block text-light-coffee bg-white rounded-sm px-4 py-1.5 text-base font-bold'>On Sale</span>}
+                <div>
+                  <div className='relative'>
+                    <img className='w-full' src={thumb} alt={currentProduct?.name} />
+                    {currentProduct?.on_sale && <span className='absolute right-4 top-4 z-30 inline-block text-light-coffee bg-white rounded-sm px-4 py-1.5 text-base font-bold'>On Sale</span>}
+                  </div>
+                  <div className='flex'>
+                    {
+                      currentProduct?.images?.map((img, index) =>
+                        <img
+                          key={index}
+                          src={img}
+                          alt={`${currentProduct?.name} - ${index}`}
+                          className={clsx({
+                            'w-24 h-24 object-cover object-center rounded-lg mr-4 mt-4 cursor-pointer border-2 border-transparent hover:border-light-coffee transition': true,
+                            'border-light-coffee!': img === thumb
+                          })}
+                          onClick={() => handleChangeThumb(img)}
+                        />
+                      )
+                    }
+                  </div>
                 </div>
+
                 <div className=''>
                   <h1 className='text-secondary text-4xl font-bold mt-4'>{currentProduct?.name}</h1>
                   <p className='text-lg my-7'>{currentProduct?.description}</p>
@@ -107,6 +132,7 @@ export default function ProductDetailPage() {
                   <div className='mt-4'>We only have <span className='font-bold'>{currentProduct?.amount_in_stock}</span> items left.</div>
                 </div>
               </div>
+
               <div className='mt-15'>
                 <div className='uppercase mb-4 font-bold'>Details</div>
                 <p>{currentProduct?.detail}</p>
@@ -146,7 +172,7 @@ export default function ProductDetailPage() {
                     <Product
                       key={index}
                       name={product.name}
-                      image={product.image}
+                      images={product.images}
                       originPrice={product.origin_price}
                       promotionPrice={product.promotion_price}
                       isOnSale={product.on_sale}

@@ -5,13 +5,16 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { object, string, number, boolean } from 'yup'
 import { toast } from 'react-toastify'
 import { isEmpty } from 'lodash'
+import { array } from 'yup'
 
 import InputField from '../form/InputField'
 import SelectField from '../form/SelectField'
 import SwitchButton from '../admin/SwitchButton'
 import Button from '../common/Button'
+import ImageUpload from '../form/ImageUpload'
 import { selectListCategories, getListCategories } from '@/store/categorySlice'
 import { createProduct, updateProduct } from '@/store/productSlice'
+import { uploadImages } from '@/store/uploadSlice'
 import { closeModal } from '@/store/modalSlice'
 import { CATEGORY_TYPE, STATUS } from '@/constants'
 import { stringHelpers } from '@/helpers'
@@ -19,15 +22,16 @@ import { stringHelpers } from '@/helpers'
 const ProductModal = ({ name }) => {
   const dispatch = useDispatch()
   const categoriesFetch = useSelector(selectListCategories)
-  const [categories, setCategories] = useState([])
+  const [_, setCategories] = useState([])
   const { isOpen, data, name: modalName, props } = useSelector((state) => state.modal)
   const productId = props.id
   const [highlight, setHighlight] = useState(false)
   const [active, setActive] = useState(true)
   const textAction = isEmpty(productId) ? 'Add' : 'Update'
+
   const defaultValues = {
     name: '',
-    image: '',
+    images: [],
     description: '',
     detail: '',
     origin_price: '',
@@ -53,7 +57,7 @@ const ProductModal = ({ name }) => {
       .max(100, 'Length must be max 100 characters')
       .matches(/^[a-zA-Z0-9\s]+$/, 'Name must not contain special characters'),
 
-    image: string().trim().required('Please enter product image'),
+    images: array().min(1, 'Please upload at least 1 image'),
     description: string().trim().required('Please enter product description'),
     detail: string().trim().required('Please enter product detail'),
     origin_price: number()
@@ -104,7 +108,7 @@ const ProductModal = ({ name }) => {
     resolver: yupResolver(schema),
     defaultValues: {
       name: '',
-      image: '',
+      images: [],
       description: '',
       detail: '',
       origin_price: '',
@@ -125,17 +129,58 @@ const ProductModal = ({ name }) => {
   const onSubmit = async (data) => {
     try {
       if (isEmpty(productId)) {
+        let imageUrls = []
+
+        if (data.images?.length) {
+          const uploaded = await dispatch(
+            uploadImages(
+              data.images.map(
+                img => img.file
+              )
+            )
+          ).unwrap()
+
+          imageUrls = uploaded.map(
+            img => img.url
+          )
+        }
+
         await dispatch(createProduct({
           ...data,
+          images: imageUrls,
           slug: stringHelpers.slugify(data.name),
           highlight,
-          status: active ? STATUS.ACTIVE : STATUS.INACTIVE
+          status: active
+            ? STATUS.ACTIVE
+            : STATUS.INACTIVE
         })).unwrap()
       } else {
+        let imageUrls = []
+        const oldImages = data.images
+          .filter(img => !img.file)
+          .map(img => img.preview)
+
+        const newFiles = data.images
+          .filter(img => img.file)
+          .map(img => img.file)
+
+        let uploadedUrls = []
+        if (newFiles.length) {
+          const uploaded = await dispatch(uploadImages(newFiles)).unwrap()
+
+          uploadedUrls = uploaded.map(
+            img => img.url
+          )
+        }
+        imageUrls = [
+          ...oldImages,
+          ...uploadedUrls
+        ]
         await dispatch(updateProduct({
           productId,
           data: {
             ...data,
+            images: imageUrls,
             slug: stringHelpers.slugify(data.name),
             highlight,
             status: active ? STATUS.ACTIVE : STATUS.INACTIVE
@@ -167,7 +212,10 @@ const ProductModal = ({ name }) => {
     if (isOpen && data) {
       reset({
         name: data.name || '',
-        image: data.image || '',
+        // images: data.images || [],
+        images: data.images?.map(url => ({
+          preview: url
+        })) || [],
         description: data.description || '',
         detail: data.detail || '',
         origin_price: data.origin_price || '',
@@ -250,13 +298,6 @@ const ProductModal = ({ name }) => {
                 required
               />
               <InputField
-                name='image'
-                label='Image URL'
-                labelClasses='text-light-coffee text-left block'
-                inputClasses='text-secondary'
-                required
-              />
-              <InputField
                 name='description'
                 label='Description'
                 labelClasses='text-light-coffee text-left block'
@@ -268,14 +309,6 @@ const ProductModal = ({ name }) => {
                 label='Detail'
                 labelClasses='text-light-coffee text-left block'
                 inputClasses='text-secondary'
-                required
-              />
-              <InputField
-                name='amount_in_stock'
-                label='Amount in stock'
-                labelClasses='text-light-coffee text-left block'
-                inputClasses='text-secondary'
-                type='number'
                 required
               />
               <InputField
@@ -296,6 +329,24 @@ const ProductModal = ({ name }) => {
                 type='number'
                 step='any'
                 required={onSale}
+              />
+              <InputField
+                name='amount_in_stock'
+                label='Amount in stock'
+                labelClasses='text-light-coffee text-left block'
+                inputClasses='text-secondary'
+                type='number'
+                required
+              />
+            </div>
+            <div className='mb-4'>
+              <ImageUpload
+                value={watch('images')}
+                onChange={(files) =>
+                  setValue('images', files, {
+                    shouldValidate: true
+                  })
+                }
               />
             </div>
             <Button type='submit' size='sm'>{textAction}</Button>

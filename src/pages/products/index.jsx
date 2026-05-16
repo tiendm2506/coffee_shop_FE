@@ -87,9 +87,9 @@ export default function ProductPage() {
                   {
                     listProducts.map((product) =>
                       <Product
-                        key={product?._id}
+                        key={product._id}
                         name={product.name}
-                        image={product.image}
+                        images={product.images}
                         originPrice={product.origin_price}
                         promotionPrice={product.promotion_price}
                         isOnSale={product.on_sale}

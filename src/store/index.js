@@ -14,6 +14,7 @@ import notificationSlice from './notificationSlice'
 import modalReducer from './modalSlice'
 import clientReducer from './clientSlice'
 import postReducer from './postSlice'
+import uploadReducer from './uploadSlice'
 
 const rootReducer = combineReducers({
   loader: loaderReducer,
@@ -26,7 +27,8 @@ const rootReducer = combineReducers({
   notification: notificationSlice,
   modal: modalReducer,
   client: clientReducer,
-  post: postReducer
+  post: postReducer,
+  upload: uploadReducer
 })
 
 const persistConfig = {
